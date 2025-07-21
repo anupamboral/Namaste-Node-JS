@@ -83,3 +83,21 @@ console.log(a + b);
 //* now to print it , previously we used browser while learning frontend , but now we are learning backend so obviously we are not gonna use browser to run this code , this time  as we already installed node we just need to open our terminal here and just write "node fileName" , so if we want to run app.js then in the terminal we just need to write "node app.js" then enter and it will execute our code. As Node.js already contains V8 inside it.
 
 //? Global object and accessing differences across browser and node
+
+//* to access the global object in the browser , we already know we can write :-
+//*console.log( window), or
+// *  console.log( this),
+//* console.log(self);
+//* console.log(frames);
+// *all of them will give us the window object, now one important fact is , the global object shown by the browser is actually not part of javascript language , instead , it is the part of browser itself. and this global object contains a lot of things like setTimeOut,setInterval etc.
+
+//* In Node, when you try to access the global object, you can't do it with window keyword or this keyword, if you try to access the global object using this keyword in node it will return empty object.you try using window it will return window is not defined.
+//* So to access the global object, in node, we have to use the "global" keyword.
+// console.log(global);
+
+//* and this global object we access in node , is also not part of js , and also not part of v8 engine , this global object is one of super powers of node js, and v8 can understand it because node provide it to v8.
+
+//* different named of global object
+//* When browsers were created they were using V8 engine, they named it window and then all the people who were writing code and on the browser they started using window as a global object then there was a concept of "this" keyword came then the "this" started pointing to window object in the browsers, then , there is a concept of web workers came in inside web workers, they started writing self to denote the global object, when node js was created the creator started using "global" keyword as the global object , so what happened is  there was a very big discrepancy/mismatch , you know on every platform be it web worker be it web browser be it node js everywhere at the end of the day we are writing javascript , so there should be a common global object, now to standardize this in 2020 javascript committee "open js foundation" they were actively maintaining javascript and they were developing new features inside javascript, "⁡⁣⁢⁣they came up with a proposition that there should be a standard global object in all the runtime environments⁡" ,if you are using node if you are using browser if you are writing web worker all everywhere there should be a single global object and there should be a single way to represent it
+// *somebody said okay lets make global as the  global keyword , some people said it should be window, some people said it should be self, there were different proposals, later  the committee did not decide on any of these keywords, why? the answer is because  suppose  at some later point of time global started pointing to window object then what will happen is suppose some people or some website are using this word global as their variable name there will be a conflict with their variables. there will be a lot of confusion if you write the word global or , window or this or self as a standard. so what committee did was they came up with a new word and that was known as that was known as ""globalThis"".
+//* So using this "globalThis" keyword you can access the global object in any js runtime either in browse or node or web-workers.
