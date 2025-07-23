@@ -101,3 +101,75 @@ console.log(a + b);
 //* When browsers were created they were using V8 engine, they named it window and then all the people who were writing code and on the browser they started using window as a global object then there was a concept of "this" keyword came then the "this" started pointing to window object in the browsers, then , there is a concept of web workers came in inside web workers, they started writing self to denote the global object, when node js was created the creator started using "global" keyword as the global object , so what happened is  there was a very big discrepancy/mismatch , you know on every platform be it web worker be it web browser be it node js everywhere at the end of the day we are writing javascript , so there should be a common global object, now to standardize this in 2020 javascript committee "open js foundation" they were actively maintaining javascript and they were developing new features inside javascript, "⁡⁣⁢⁣they came up with a proposition that there should be a standard global object in all the runtime environments⁡" ,if you are using node if you are using browser if you are writing web worker all everywhere there should be a single global object and there should be a single way to represent it
 // *somebody said okay lets make global as the  global keyword , some people said it should be window, some people said it should be self, there were different proposals, later  the committee did not decide on any of these keywords, why? the answer is because  suppose  at some later point of time global started pointing to window object then what will happen is suppose some people or some website are using this word global as their variable name there will be a conflict with their variables. there will be a lot of confusion if you write the word global or , window or this or self as a standard. so what committee did was they came up with a new word and that was known as that was known as ""globalThis"".
 //* So using this "globalThis" keyword you can access the global object in any js runtime either in browse or node or web-workers.
+
+//* ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁢Season 1 - Episode - 4 - module.export & import⁡
+
+//* we can write all of our code in just one file, but usually we don't do it.
+//* we create multiple files to write code for multiple parts of parts of our project.
+//* when we write "node app.js" , here app.js is the entry point of our code , but what if we have another file like xyz.js(in node it is called module) and we want to execute that here also, because right now app.js and xyz.js is not connected.
+//* So the answer is require() function.
+//* we just need to add this require() function in the top of app.js and inside this we just mention the path of that another module/file like require("./xyz.js") and that's it. now before executing app.js code first xyz.js modules's code will  be executed first.then the code of app.js 's code will run.
+
+//* problem with require
+//* let's say we have a function named sum() , in the xyz.js module, and we have to used require function to get the xyz.js here inside app.js , but if we try to execute the sum() function here in the app.js then it will not work, the terminal will show "sum is not defined". Because when you create another separate module, and using require function you require that module then the module's code will be executed but you can't access the variables,methods, functions of that module simply by requiring the module.
+//* "Modules protect their variables and functions from leaking."
+//* so can we access any function from another module?
+//* We have to intentionally export that function from that module like
+/* ⁡⁣⁢⁢module.exports = sum ⁡ */
+//* and also import that in app.js where we want to use that function like
+// ⁡⁣⁢⁣const sum = require(./sum.js)⁡;//* this require function is returning the sum function as we explicitly exported that from the module. and now we are saving that in a sum constant.
+
+//* exporting multiple things at once
+//* let's say inside xyz.js module we have a sum function and a variable named x and we want to export both so how can we do that.
+//* we have to use a object while exporting like:
+/* module.exports= {
+x:x,
+sum:sum
+} */
+//* or below both are same
+// module.exports= {x , sum}
+
+//* and now while importing we have import the obj like
+// const obj = require(./sum.js);
+//* then use the function or variable using the obj.like
+//* console.log(obj.x)/
+//* obj.sum(3,4);
+
+//* or we can directly destructure while importing like
+// const {sum,x} = require(./sum.js);
+
+//* why modules protect their variables and functions?
+//*  suppose we have imported module 2 inside module1 , now inside module 1 we want create a variable name x , but module 2 which we imported already has a  variable named x , so what will happen is that both variables with conflict with each other that's why it is important to keep the variables and functions protected unless they are needed.
+
+//* different module patterns
+//* there are two kind of module patterns , the one we just learnt is called commonjs module pattern, here we use module.exports and require, it is the older one, and it is by default used in node.it is also represent with .cjs extension.
+
+//* the new module pattern is called ES module pattern . here for exporting we just need to write export before the function or variable and while importing we just need to write - import {function , variable} from "./path". , it is by default used in react , angular.it is also represent with .mjs extension.
+//* to use this es modules , in the package.json file in the type property you have to set its value to "module" and for commonjs,it is by default in node but you can also write commonjs to use commonJs.
+//* commonjs always require modules in synchronous way but in ES modules we have option to import module in asynchronous way.
+//* commonjs js by default runs in non-strict mode for example when you are using it  you write z=15 and run the code then it will not through any error even you have not used any keyword like var or let or const. ES modules by default runs in strict mode for example if if we do the same z= 15 then it will through an error while running  the code that z is not defined.
+
+//* what is module.exports?
+//* if we try to print it using console.log(module.exports) , then it will show {} , empty object.
+//* that why instead of doing this
+/* module.exports= {
+x:x,
+sum:sum
+} */
+//* some people also do below
+// * module.exports.x = x;
+// * module.exports.sum = sum;
+//* both ways are right.
+
+//* ⁡⁢⁣⁣making a folder module⁡
+//* let's say we have a folder named calculate and inside that we have multiple file exporting multiple functions like sum , multiply ,divide . it becomes hectic to access each of them using the path specially when we have 100s of files, in that case we can make the folder itself a module, to do that we just need to go inside the folder and create a file index.js . then inside that file first import all of the function and then export them again. now outside the calculate folder we have app.js , now if we want to access the functions from the calculate folder files, we don't need to mention the path of every file/module because now the folder is itself a module now, so we can just mention the folder in the path and that's all.like-
+// ⁡⁣⁢⁣const { sum, divide, multiply } = require(./calculate);⁡
+
+//* importing json
+//* it is very easy , just where you want to import the json file,do like this and remember you don't event need to even need to export the json , just import it like -
+//* const data = require("./data.json");
+
+//* ⁡⁣⁣⁢there are other important modules inside node js like util, if we want to use it then we just need to do⁡
+
+//* ⁡⁣⁢⁣const util = require("node:util");⁡
+//* console.log(util);
