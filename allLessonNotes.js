@@ -173,3 +173,57 @@ sum:sum
 
 //* ⁡⁣⁢⁣const util = require("node:util");⁡
 //* console.log(util);
+
+//* modules - Modules encapsulates some piece of code which is only accessible to itself unless we explicitly export something from it.
+
+//*  ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 5 - Diving into node js github repo⁡
+
+//* now we will learn what happens when we use require() function to import any module?
+
+//* const a = require("./app");
+//* console.log(a);
+
+//* in the above line we are requiring the app.js module, so before importing node.js will take all of the code of app.js and put it inside a IIFE(immediately invoked function expression), then executes it. that's why the variables and functions of that module remains private. we already know that the variable or function we create inside any function are function scoped , so that means those variables and functions are private and only accessible inside that function where they are present. Same happens in case of requiring modules , as node js wraps all of the code any module inside a IIFE , before executing the code that's why the code that module remains private inside that IIFE.
+//* Example of IIFE
+(function () {
+  var cd = "compact disk";
+  function sum() {
+    const a1 = 2;
+    const a2 = 34;
+    return a1 + a2;
+  }
+  console.log(cd + "--" + sum());
+})();
+
+//* Q. How are variables and functions are private in different  modules?
+//* A. IIFE and require function
+
+//* Q. How do we get access to module.exports?
+//* because when node js wraps a module inside IIFE , it sets some parameters for that IIFE which are module, require,etc. and while calling a IIFE , node js also passes the arguments module, require. that's why inside the module we can require another module and from inside of IIFE it also returns module.exports that why we can access the exported variables and functions through module.exports. module.exports is by default is a empty object. while we export explicitly we modify the empty object of module.exports={}.
+//* example
+(function (exports, require, module, __filename, __dirname) {
+  //⁡⁣⁢⁣ require("./app.js")⁡; //* we can access require because node js passes it as parameter
+  var cd = "compact disk";
+  function sum() {
+    const a1 = 2;
+    const a2 = 34;
+    return a1 + a2;
+  }
+  // ⁡⁣⁢⁣return module.exports = { cd };⁡ //* we can access the exported variables and functions because node js returns module.exports automatically.
+})(exports, require, module, __filename, __dirname);
+
+//* So after doing all of this node js gives the code to v8 engine to execute.
+
+//* ⁡⁣⁢⁣Q. What steps happen when you require a file using the require(/path) function?⁡
+//* A. The steps are:-
+/*
+* 1.Resolving the module :- So in this steps , node checks what kind of file it is , so it can be ./lacalpath , ./ json , node:module . So first node check which type of file it is, because for every type the resolving process will be different.
+* 2. Loading the module :- file content is loaded according to the file type.
+* 3.Compile(Wraps inside IIFE) :- when it is a javascript file , it wraps the whole code inside IIFE with necessary parameters.
+
+* 4. Evaluation :- using the V8 engine it executes the code , calculates the result . In this step module.exports is also returned.
+* 5, Caching :- it caches the result , because if the same file is required by multiple files then there is no need to calculate the same thing multiple times , instead it will provide the calculated result from the cached memory.
+*/
+
+//* the v8 engine we are taking about is not a machine or engine , it is just some piece of C++ code, it is just a dependency inside the node js.
+//* libuv is also a dependency inside node, this library gives so many super powers to node , one of them is async I/O / Non-Blocking I/O.

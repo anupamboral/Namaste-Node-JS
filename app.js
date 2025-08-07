@@ -7,3 +7,4 @@ console.log(a + b);
 // console.log(globalThis);
 const util = require("node:util");
 // console.log(util);
+module.exports = a;
