@@ -246,3 +246,20 @@ sum:sum
 //* So it is a non-blocking operation because no order is blocking the queue.
 
 //* So javascript is synchronous but with the power of node it becomes asynchronous/non-blocking.
+
+//* now let's see how v8 javascript engine executes javascript code :-
+//* [see image - "images\v8 js engine code execution(sync code).jpg"]
+
+//* so we will understand how thw below code will will be executed through v8 engine.
+/*
+ * var a = 576597;
+ * var b = 47807;
+ * function multiply(a, b) {
+ *   const result = a * b;
+ *   return result;
+ * }
+ *
+ * var c = multiply(a, b);
+ */
+
+//* So we know that javascript is a synchronous single threaded language so all of the code will be executed line by line one after another in the synchronous manner , All of our code will be wrapped inside a global execution context and that will be post inside the call stack, so the V8 engine has three things- the call stack ,the memory heap and the garbage collector, So inside the call stack the global execution context will be pushed so our code will start to execute line by line so at the first line our variable a has some value so that will be saved inside the memory heap then javascript engine will move to the next line and again it sees variable B and it has some value so it again saves its value to the memory heap and the garbage collector works in sync with the memory heap so when some variable or something is not needed it will immediately go to the garbage collectors so garbage collector always keep checking the memory heap that if anything is not needed so now the javascript engine will move to the next line and it will see a function so as it is not a function call so it will not execute the function it will just save the whole function inside the memory heap then it goes to the next line and it sees the variable c and its value is a function call so as soon as javascript engine sees that it is a function call it wraps the code of that function inside a function execution context and push that function execution context inside the call stack so the global execution context is still running and on top of that the function execution context is pushed so inside it they functions code is running so inside the function the first line it is multiplying two values and saves the result inside the memory heap in the next line it returns the result so the function execution context will return the result to the global execution context and immediately the function execution context will be popped out so it goes out from the call stack so now the control comes back to the global execution context and the variable C has got the returned value now this value will be also saved inside the memory heap and beside that all of the unnecessary variables will be collected by the garbage collector and as the whole code is finally executed now the global execution context will also popped out from the call stack and now the call stack is empty again so that is how synchronous code is executed inside javascript V8 engine.
