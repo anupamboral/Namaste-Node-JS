@@ -280,3 +280,34 @@ sum:sum
 //* So like v8 engine ,libuv is also a dependency inside node js. and js engine talks to libuv and libuv talks to operating system .so libuv is working like a middle layer between our js engine and operating system.and that's how node js makes async I/o easier .
 
 //* So we can say libuv is one of the most important library inside node js.
+
+//* Now we will se how v8 engine executes async code using libuv:-
+//* [see image - "images\v8 engine async code execution with libuv.jpg"]
+
+/*
+* suppose we need to execute below code
+ * var a = 576597;
+ * var b = 47807;
+ * 
+ ? https.get("https://api.fbi.com",(res)=>{
+ ? console.log(res?.secret)
+ ? })
+ * 
+ ? setTimeout(()=>{
+ ? console.log("setTimeout")
+ ? },5000)
+ * 
+ ? fs.readFile("./gossip.txt","utf8",(data)=>{
+ ? console.log("file data",data)
+ ? })
+ * 
+ * function multiply(a, b) {
+ *   const result = a * b;
+ *   return result;
+ * }
+ *
+ * var c = multiply(a, b);
+*/
+
+//* So now we will discuss how the V8 engine will execute the above code using Libuv , So in the above code there is some synchronous code and there is also some asynchronous code, So the first step is our whole code is wrapped inside a global execution context and pushed inside the call stack, Now our code will start to execute line by line so at the first line we have a variable A so it will be saved inside the memory heap and the interpreter will move to the next line and it will see variable now again it will save it to the memory heap and then goes to the next line and js engine sees that it is a api call so J S engine cannot perform api call so immediately js engine delegates this api call task to lib uv now libuv Will register this api call with the callback function and wait until the response returns from the server meanwhile javascript engine move to the next line to execute the code and it again sees a setTimeOut() Function so javascript engine has no concept of time it just gets the code and immediately executes it that's how javascript works so as javascript engines is this set I timeout function Immediately it gives this to libuv Now leave we will register this set timeout function with the callback function and start to count the time as libuv Can talk with the operating system and access it time functions meanwhile javascript engine moves to the next line and again it sees that it has to read a file from the file system so javascript engine again can't read this file itself so it again offloads this task to leave uv and leave uv register these file system reading task with the call back function now javascript engine moves to the next line and it sees that it is a normal function, So it saves the whole function inside the memory heap and again it moves to the next line and it sees that it is a variable C and its value is a function call which it has already saved inside the memory heap so it takes the function from the memory heap and wraps it inside a function execution context, And push it inside the call stack now it multiplies it and saves the result inside the memory heap and then in the next line it returns the result now the functional execution context moves out of the call stack and also the result  Constant it created inside the memory heap goes to the garbage collector as it is not needed anymore and the result is already returned so now the control comes back to the global execution context again and the variable C got its result as returned value and J S engine saves it inside the memory heap and In the next line it prints the result of c variable , Now as the code execution is completed the global execution context moves out of the call stack meanwhile lib uv has completed the file system reading and the call stack is already empty as the global execution context is moved out of the call stack so as soon as lib UV Get the file system data immediately it creates a function execution context and push that with the callback function inside the call stack and call stack can now immediately execute it and print the data to the console and this function execution context goes out of the call stack and then after few milliseconds again libuv Sees that the server has returned the api calls data so immediately libuv Creates a function execution context and push that inside the call stack with the callback function it previously register and js engine will execute the function and print the data to the console and then the function execution context moves out of the call stack and finally 5 seconds passed And libuv uv sees that the timer is completed So Libuv again Creates a function execution context and push that inside the call stack as the timer is completed and js engine will immediately execute the function and print set timeout to the console and again the function execution context goes out of the call stack.
+//* that's how v8 engine and libuv works together to make everything optimized and fast. And that's why js engine is synchronous but with the power of libuv , node js is capable of asynchronous IO or  non blocking IO.
