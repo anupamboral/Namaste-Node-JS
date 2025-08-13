@@ -192,7 +192,7 @@ sum:sum
     const a2 = 34;
     return a1 + a2;
   }
-  console.log(cd + "--" + sum());
+  // console.log(cd + "--" + sum());
 })();
 
 //* Q. How are variables and functions are private in different  modules?
@@ -228,7 +228,7 @@ sum:sum
 //* the v8 engine we are taking about is not a machine or engine , it is just some piece of C++ code, it is just a dependency inside the node js.
 //* libuv is also a dependency inside node, this library gives so many super powers to node , one of them is async I/O / Non-Blocking I/O.
 
-//* ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 6 - Libuv async IO
+//* ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 6 - Libuv async IO⁡
 
 //* Node js has a event driven architecture capable asynchronous I/O.
 
@@ -283,31 +283,58 @@ sum:sum
 
 //* Now we will se how v8 engine executes async code using libuv:-
 //* [see image - "images\v8 engine async code execution with libuv.jpg"]
-
 /*
-* suppose we need to execute below code
- * var a = 576597;
- * var b = 47807;
- * 
- ? https.get("https://api.fbi.com",(res)=>{
- ? console.log(res?.secret)
- ? })
- * 
- ? setTimeout(()=>{
- ? console.log("setTimeout")
- ? },5000)
- * 
- ? fs.readFile("./gossip.txt","utf8",(data)=>{
- ? console.log("file data",data)
- ? })
- * 
- * function multiply(a, b) {
- *   const result = a * b;
- *   return result;
- * }
- *
- * var c = multiply(a, b);
+//*suppose we need to execute below code
+? const https = require("https"); //* importing https module from node, we can also write it like require("node:https"), both are the same thing , so writing node: is optional
+? const fs = require("fs"); //* importing file system module from node
+* var a = 576597;
+* var b = 47807;
+* 
+? https.get("https://dummyjson.com/products/1", (res) => {
+?   console.log("fetched data successfully");
+? });
+* 
+? setTimeout(() => {
+?   console.log("setTimeout");
+? }, 5000);
+* 
+? fs.readFile("./file.txt", "utf8", (error, data) => {
+?   console.log("file data", data);
+? });
+* 
+* function multiply(a, b) {
+*   const result = a * b;
+*   return result;
+* }
+* 
+* var c = multiply(a, b);
+* console.log(c);
 */
-
 //* So now we will discuss how the V8 engine will execute the above code using Libuv , So in the above code there is some synchronous code and there is also some asynchronous code, So the first step is our whole code is wrapped inside a global execution context and pushed inside the call stack, Now our code will start to execute line by line so at the first line we have a variable A so it will be saved inside the memory heap and the interpreter will move to the next line and it will see variable now again it will save it to the memory heap and then goes to the next line and js engine sees that it is a api call so J S engine cannot perform api call so immediately js engine delegates this api call task to lib uv now libuv Will register this api call with the callback function and wait until the response returns from the server meanwhile javascript engine move to the next line to execute the code and it again sees a setTimeOut() Function so javascript engine has no concept of time it just gets the code and immediately executes it that's how javascript works so as javascript engines is this set I timeout function Immediately it gives this to libuv Now leave we will register this set timeout function with the callback function and start to count the time as libuv Can talk with the operating system and access it time functions meanwhile javascript engine moves to the next line and again it sees that it has to read a file from the file system so javascript engine again can't read this file itself so it again offloads this task to leave uv and leave uv register these file system reading task with the call back function now javascript engine moves to the next line and it sees that it is a normal function, So it saves the whole function inside the memory heap and again it moves to the next line and it sees that it is a variable C and its value is a function call which it has already saved inside the memory heap so it takes the function from the memory heap and wraps it inside a function execution context, And push it inside the call stack now it multiplies it and saves the result inside the memory heap and then in the next line it returns the result now the functional execution context moves out of the call stack and also the result  Constant it created inside the memory heap goes to the garbage collector as it is not needed anymore and the result is already returned so now the control comes back to the global execution context again and the variable C got its result as returned value and J S engine saves it inside the memory heap and In the next line it prints the result of c variable , Now as the code execution is completed the global execution context moves out of the call stack meanwhile lib uv has completed the file system reading and the call stack is already empty as the global execution context is moved out of the call stack so as soon as lib UV Get the file system data immediately it creates a function execution context and push that with the callback function inside the call stack and call stack can now immediately execute it and print the data to the console and this function execution context goes out of the call stack and then after few milliseconds again libuv Sees that the server has returned the api calls data so immediately libuv Creates a function execution context and push that inside the call stack with the callback function it previously register and js engine will execute the function and print the data to the console and then the function execution context moves out of the call stack and finally 5 seconds passed And libuv uv sees that the timer is completed So Libuv again Creates a function execution context and push that inside the call stack as the timer is completed and js engine will immediately execute the function and print set timeout to the console and again the function execution context goes out of the call stack.
 //* that's how v8 engine and libuv works together to make everything optimized and fast. And that's why js engine is synchronous but with the power of libuv , node js is capable of asynchronous IO or  non blocking IO.
+
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 7 - Sync,async,setTimeoutZero - code
+
+//* above we already learnt about how to read  a file with fs.readfile() and this asynchronous so when js engine comes to this line where fs.readFile is written it offloads this task to libuv and continues the code execution so this function is non-blocking.
+//* but there is another similar kind of function which is blocking type , soo this function is synchronous , and its name is " fs.readFileSync("path","utf8",(err,data)=>{})" , so as the name says "readFileSync()" , this function is synchronous, so we js engine comes to the line where this function is written, js engine will give this this task to libuv as js engine is capable of reading a file from the file system but unlike the readFile() function this readFileSync() function blocks the main thread , so till libuv returns the response of this task , it will block the thread, and only after executing this function js engine can move to the next line.
+//* so we should not use this readFileSync() unless we want to block the main thread.
+
+//* So here we will see a good example of blocking the main thread with another example :-
+//* importing the crypto module from node
+const crypto = require("crypto"); //* The node:crypto module provides cryptographic functionality that includes a set of wrappers for OpenSSL's hash, HMAC, cipher, decipher, sign, and verify functions.
+//* on this module we can access many methods , and of the methods named pbkdf2() [password based key derivation function] will help us to see how this method blocks the main thread and decrease the performance and increase the code execution time.hover on the method to know more about the arguments passed.Parameters: (password, salt, iterations: number, keylen: number, digest:encryption type ): Buffer
+
+//* console.log("hi");
+//* synchronous function (it will block the thread until it's executed, we have set the iteration to 5000000 ) , as this method is synchronous method so it does not need call back function, because call stack will be blocked until it's executed
+//? const key = crypto.pbkdf2Sync("secret", "salt", 5000000, 64, "sha512");
+//? console.log(key.toString("hex")); //* this will take so mush time because it has to perform 50lakh iterations before giving the key , and it is blocking the call stack until it is finished , so below code will be executed only after it is executed.
+//* console.log("1st key generated");
+
+//* asynchronous version of the same function(non blocking)
+//? crypto.pbkdf2("secret", "salt", 500000, 64, "sha512", (err, derivedKey) => {
+//?   if (err) throw err;
+//?   console.log("second key generated :", derivedKey.toString("hex"));
+//? }); //* this function does not blocks the the main thread , when js engine sees this it offloads the task to libuv but does not wait till it's completion, js engine continues the execution of any code below, and when  this task is completed , libuv gives it to call stack then it gets executed, so we used always use this method because it is non-blocking.so the code below this will be executed first before this method's  execution.
+//* console.log("second key execution started");
+
+//* so methods with "sync" keyword at last , are synchronous methods so we should not use them , as they block the main thread. we should use the asynchronous methods.
