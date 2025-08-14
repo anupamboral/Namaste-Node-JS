@@ -338,3 +338,17 @@ const crypto = require("crypto"); //* The node:crypto module provides cryptograp
 //* console.log("second key execution started");
 
 //* so methods with "sync" keyword at last , are synchronous methods so we should not use them , as they block the main thread. we should use the asynchronous methods.
+
+//* trust issues with setTimeOut() with 0 sec timer
+//* setTimeOut() is asynchronous function, so even we provide a 0 millisecond timer to this method , it's not trust worthy that it will be executed in 0 milliseconds, because when js engine see the line setTimeout(()=>{},0), it offloads the task to libuv, then when libuv sees it has 0 sec timer, libuv stills can't push the callback function to the call stack immediately, it call only push the call back function when the call stack is empty, so all of the synchronous code below the setTimeout will be executed first, and when the global execution context goes out of the call stack then only libuv can push the callback function (wrapping inside a function execution context) and then only setTimeOut can be executed.
+//* So even we provide 0 milliseconds timer to setTimeout , stills it comes with a condition that it will be executed as soon as possible when the call stack is empty.
+
+//* example
+
+console.log("hello");
+setTimeout(() => {
+  console.log("call me right now");
+}, 0); //* it will be call immediately but only after the call stack is empty because this is async function which can be only executed when global execution context moves out the call stack.
+const key = crypto.pbkdf2Sync("secret", "salt", 5000000, 64, "sha512");
+console.log(key.toString("hex"));
+//* as this crypto.pbkdf2Sync() is a synchronous function , so the setTimeout() above it with 0 millisecond timer can only executed once this synchronous code is executed and global execution context moves out of the call stack.
