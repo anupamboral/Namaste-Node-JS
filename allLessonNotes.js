@@ -352,3 +352,51 @@ setTimeout(() => {
 const key = crypto.pbkdf2Sync("secret", "salt", 5000000, 64, "sha512");
 console.log(key.toString("hex"));
 //* as this crypto.pbkdf2Sync() is a synchronous function , so the setTimeout() above it with 0 millisecond timer can only executed once this synchronous code is executed and global execution context moves out of the call stack.
+
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 8 - Deep dive into v8 js engine notes
+//* Is javascript a interpreted language or compiled language?
+//* there are Mainly three types of languages so the first one is interpreted languages so in case of interpreted languages they are executed line by line and their initial execution is fast and there is a interpreter which executes the code now there is second type of languages which are compiled languages so in case of compiled languages the code first gets converted from high level code to machine level code and because of that the compilation process is initially heavy but then executed fast as it is already converted into machine code and there is a compiler which compiles the code and now comes the third category which is just in time compiled(JIT compilation) language and javascript falls in this category so javascript has both the interpreter and the compiler and that is what makes javascript so unique.
+
+//* when we write so js code and give it to v8 engine to execute , what happens behind the scene?
+//* when code goes into v8 engine , it goes through may phases, before finally getting executed, so the the first phase is:-
+//* 1st phase.Parsing :- This phase has two steps
+//* ...............a. Lexical Analysis or Tokenization :- in this step js engine converts every line of code in to separate tokens. let's say a line - var a = 100; so while tokenization , it will create token for var, token for a , token for = , token for 100.
+//* ..............b.Syntax Analysis or Syntax parsing:- in this step js engine converts tokens into AST (Abstract syntax tree). its a tree like structure.
+//* for this line :- var a=100; the AST will will look like:-
+/*{
+  "type": "Program",
+  "start": 0,
+  "end": 191,
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "start": 179,
+      "end": 191,
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 183,
+          "end": 190,
+          "id": {
+            "type": "Identifier",
+            "start": 183,
+            "end": 184,
+            "name": "a"
+          },
+          "init": {
+            "type": "Literal",
+            "start": 187,
+            "end": 190,
+            "value": 100,
+            "raw": "100"
+          }
+        }
+      ],
+      "kind": "var"
+    }
+  ],
+  "sourceType": "module"
+}*/
+//* It is not important to remember this AST but we can see just for one line how big AST is generated, there is a website "https://astexplorer.net/", here we can generate AST for any js code.
+
+//* 2nd phase:- Conversion to byte code through interpreter and optimization using compiler  :- in this step , there is interpreter, chrome's interpreter is called "ignition interpreter", this interpreter takes the AST(abstract syntax tree) generated in the previous step and converts that into "byte code" which can be executed now. But in between when ignition interpreter converts the code into byte code sometimes it sees some multiple times reused code(also called hot code), Like some function which has been called multiple times so when the interpreter sees this type of hot code , the interpreter gives this hot code to the compiler , chrome's compiler is called "Turbo Fan", So turbofan compiler takes the hot code and optimizes it and converts it to machine code which can be easily executed and the compiler does it because as the hot code is used multiple times so the js engine considers that this kind of code can be optimized more, Now we learnt about conversion to the bytecode using interpreter and also the optimization of code using the compiler but there is another process happens in this phase which is known as de-optimization. So when the interpreter gives some hot code to the compiler for optimization, The compiler makes some assumptions about the code especially about the types of the data ,for example We have sum(num1,num2) function , Which has been used multiple  times , So the interpreter treats it as hot code and gives it to the compiler, Now first time when the compiler sees the code it sees that it is called using two numbers so the compiler assumes that the type of the passed arguments Will be numbers Next time when it will be called and then next 34 times the function is also called using numbers so all of these times the assumptions were correct that is why the code will be executed very fast but suddenly the compiler sees that this time the arguments are not numbers instead this time these are two strings so the user has passed two strings as the arguments of the functions and as we already know that javascript can perform  String concatenation so that is completely fine but as this function call makes the assumption of the compiler false, Immediately the compiler gives the function back to the interpreter for de-optimizing it and the interpreter again converts the function into byte code which can be executed next, So all of these processes of converting the code to byte code or optimizing the code using compiler or even de-optimizing the code all of these things happens together so fast. Even more things like inline caching ,copy elision and many more thing happens at the same time to optimize the code , and run it faster.
