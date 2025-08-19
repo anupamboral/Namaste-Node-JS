@@ -359,7 +359,7 @@ console.log(key.toString("hex"));
 
 //* when we write so js code and give it to v8 engine to execute , what happens behind the scene?
 //* when code goes into v8 engine , it goes through may phases, before finally getting executed, so the the first phase is:-
-//* 1st phase.Parsing :- This phase has two steps
+//* 1st phase.Parsing :- This phase has two steps[SEE IMAGE - images\v8 engine 1st phase.jpg]
 //* ...............a. Lexical Analysis or Tokenization :- in this step js engine converts every line of code in to separate tokens. let's say a line - var a = 100; so while tokenization , it will create token for var, token for a , token for = , token for 100.
 //* ..............b.Syntax Analysis or Syntax parsing:- in this step js engine converts tokens into AST (Abstract syntax tree). its a tree like structure.
 //* for this line :- var a=100; the AST will will look like:-
@@ -399,4 +399,54 @@ console.log(key.toString("hex"));
 }*/
 //* It is not important to remember this AST but we can see just for one line how big AST is generated, there is a website "https://astexplorer.net/", here we can generate AST for any js code.
 
+//* [SEE IMAGE FOR BELOW - images\v8 engine 2nd phase.jpg]
 //* 2nd phase:- Conversion to byte code through interpreter and optimization using compiler  :- in this step , there is interpreter, chrome's interpreter is called "ignition interpreter", this interpreter takes the AST(abstract syntax tree) generated in the previous step and converts that into "byte code" which can be executed now. But in between when ignition interpreter converts the code into byte code sometimes it sees some multiple times reused code(also called hot code), Like some function which has been called multiple times so when the interpreter sees this type of hot code , the interpreter gives this hot code to the compiler , chrome's compiler is called "Turbo Fan", So turbofan compiler takes the hot code and optimizes it and converts it to machine code which can be easily executed and the compiler does it because as the hot code is used multiple times so the js engine considers that this kind of code can be optimized more, Now we learnt about conversion to the bytecode using interpreter and also the optimization of code using the compiler but there is another process happens in this phase which is known as de-optimization. So when the interpreter gives some hot code to the compiler for optimization, The compiler makes some assumptions about the code especially about the types of the data ,for example We have sum(num1,num2) function , Which has been used multiple  times , So the interpreter treats it as hot code and gives it to the compiler, Now first time when the compiler sees the code it sees that it is called using two numbers so the compiler assumes that the type of the passed arguments Will be numbers Next time when it will be called and then next 34 times the function is also called using numbers so all of these times the assumptions were correct that is why the code will be executed very fast but suddenly the compiler sees that this time the arguments are not numbers instead this time these are two strings so the user has passed two strings as the arguments of the functions and as we already know that javascript can perform  String concatenation so that is completely fine but as this function call makes the assumption of the compiler false, Immediately the compiler gives the function back to the interpreter for de-optimizing it and the interpreter again converts the function into byte code which can be executed next, So all of these processes of converting the code to byte code or optimizing the code using compiler or even de-optimizing the code all of these things happens together so fast. Even more things like inline caching ,copy elision and many more thing happens at the same time to optimize the code , and run it faster.
+
+//* And in the same time, garbage collector is working with all of this,
+//*V8's garbage collection (GC) automatically manages memory in JavaScript, freeing up unused memory to prevent crashes and slowdowns. It employs a two-stage process: minor GC (Scavenger) for the young generation and major GC (Mark-Compact) for the entire heap. These stages utilize different techniques like incremental, concurrent, and parallel processing to optimize performance. [1, 2, 3, 4, 5]
+/* Below is detailed overview but it is not important to remember above is enough
+* Here's a more detailed breakdown: 
+* 1. Memory Allocation and the Heap: 
+* 
+* • V8 uses a heap to store objects, arrays, and functions. [2]  
+* • When an object is no longer reachable (no longer referenced), it becomes * garbage. [3]  
+* • V8 automatically identifies and removes garbage, freeing up memory for new * allocations. [3]  
+* 
+* 2. Minor Garbage Collection (Scavenger): 
+* 
+* • Focuses on the young generation, where newly created objects reside. [1, 3]  
+* • The Scavenger divides the heap into "from" and "to" spaces, using a "copying" * method. [3, 6]  
+* • Objects are copied from the "from" space to the "to" space if they are still * reachable. Unreachable objects are left behind and reclaimed. [3, 6]  
+* • This process is relatively fast and frequent, reclaiming memory from short-* lived objects. [1]  
+* 
+* 3. Major Garbage Collection (Mark-Compact): 
+* 
+* • Deals with the entire heap, including the older generation. [1, 7]  
+* • The Mark-Compact algorithm identifies reachable objects and moves them to * reclaim fragmented memory spaces. [7]  
+* • This process is more resource-intensive and can cause pauses in program * execution. [1, 3]  
+* • V8 uses incremental, concurrent, and parallel techniques to reduce the impact * of these pauses. [3, 5]  
+* 
+* 4. Optimization Techniques: 
+* 
+* • Generational Hypothesis: Most objects die young, so minor GCs are more * frequent and efficient. [3]  
+* • Incremental GC: Divides the major GC into smaller steps, reducing pauses. [3]  
+* • Concurrent GC: Allows the main thread to continue execution while garbage * collection runs in the background. [3, 5]  
+* • Parallel GC: Uses multiple threads to speed up the garbage collection process. * [3, 5]  
+* 
+* 5. Triggers for Garbage Collection: 
+* 
+* • Garbage collection is often triggered by memory allocation failures. 
+* • If V8 cannot allocate memory for a new object, it will attempt to collect * garbage. If it fails after a few attempts, the process may crash. [3]  
+* 
+* In essence, V8's garbage collection is a sophisticated process that balances * performance and memory management by: 
+* 
+* • Dividing the heap into generations to optimize garbage collection frequency. 
+* • Using different techniques (copying, mark-compact) for different generations. 
+* • Employing incremental, concurrent, and parallel techniques to minimize * performance impact. [1, 3, 5, 6, 7, 8]  
+
+*/
+
+//* v8 also use a garbage collector named "Oilpan". Oilpan implements a Mark-Sweep garbage collector where garbage collection is split among two phases: marking where the managed heap is scanned for live objects, and sweeping where dead objects on the managed heap are reclaimed.
+//* there is another garbage collector named orinoco.
+//* We can read about all of these garbage collectors in v8.dev (official site of v8) , in their docs and blogs. every thing is written their.
+//* to see the whole v8 engine execution process see this image - "images\whole v8 engine execution diagram.jpg".
