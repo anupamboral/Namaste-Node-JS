@@ -314,7 +314,6 @@ sum:sum
 //* that's how v8 engine and libuv works together to make everything optimized and fast. And that's why js engine is synchronous but with the power of libuv , node js is capable of asynchronous IO or  non blocking IO.
 
 //! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 7 - Sync,async,setTimeoutZero - code
-
 //* above we already learnt about how to read  a file with fs.readfile() and this asynchronous so when js engine comes to this line where fs.readFile is written it offloads this task to libuv and continues the code execution so this function is non-blocking.
 //* but there is another similar kind of function which is blocking type , soo this function is synchronous , and its name is " fs.readFileSync("path","utf8",(err,data)=>{})" , so as the name says "readFileSync()" , this function is synchronous, so we js engine comes to the line where this function is written, js engine will give this this task to libuv as js engine is capable of reading a file from the file system but unlike the readFile() function this readFileSync() function blocks the main thread , so till libuv returns the response of this task , it will block the thread, and only after executing this function js engine can move to the next line.
 //* so we should not use this readFileSync() unless we want to block the main thread.
@@ -351,7 +350,7 @@ setTimeout(() => {
 }, 0); //* it will be call immediately but only after the call stack is empty because this is async function which can be only executed when global execution context moves out the call stack.
 const key = crypto.pbkdf2Sync("secret", "salt", 5000000, 64, "sha512");
 console.log(key.toString("hex"));
-//* as this crypto.pbkdf2Sync() is a synchronous function , so the setTimeout() above it with 0 millisecond timer can only executed once this synchronous code is executed and global execution context moves out of the call stack.
+//* as this crypto.pbkdf2Sync() is a synchronous function , so the setTimeout() above it with 0 millisecond timer can only executed once this synchronous code is executed and global execution context moves out of the call stack.⁡
 
 //! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 8 - Deep dive into v8 js engine notes
 //* Is javascript a interpreted language or compiled language?
@@ -450,3 +449,29 @@ console.log(key.toString("hex"));
 //* there is another garbage collector named orinoco.
 //* We can read about all of these garbage collectors in v8.dev (official site of v8) , in their docs and blogs. every thing is written their.
 //* to see the whole v8 engine execution process see this image - "images\whole v8 engine execution diagram.jpg".
+
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 9 - Libuv & Event loop notes
+
+//* now we will learn about how libuv works behind the scenes
+
+//* as we learnt about v8 engines that it has a call stack,garbage collector,memory heap inside it.
+//* similarly inside libuv , it has event loop, call queue and thread pool.
+//* see image - images\different parts of libuv.jpg
+
+//* So we know that V8 engine of loads or delegates the asynchronous tasks to libuv , After some time when a task is completed ,the callback function of that task, goes to the callback queue And wait until the call stack of the v8 engine is  idle/empty, Because until the V8 engine is blocked so the main thread is blocked, The libuv can't push any callback function into it so libuv has to wait till the call stack is empty, And the event loop continuously watches the call stack and the callback queue so the event loop watch in the call stack if it is empty or not, and event loop watches the callback queue that if any callback function is waiting in the queue or not,
+//*So whenever event loop see some callback functions is waiting in the callback queue, it checks if the call stack is empty or not, it has wait till the call stack is empty, as as soon as  the call stack is empty , event loop can now take the callback function which has been waiting in the callback queue and push it to the call stack for execution, wrapping it inside a function execution context.
+
+//? but what happens when multiple tasks are completed at same time, like - a api call, setTimeout, and file reading is completed at the same time, and waiting in the callback queue, so what will be execution order of all these tasks? Will api callback will be pushed first or settimeout or file read callback?
+//* to understand thee answer of above we have to understand how the event loop works behind the scenes.
+//* See image - images\event loop phrases.jpg
+//* How to understand the working process of event loop first we have to understand The phases happens inside the event loop so we can treat all of the phases as steps, and these steps runs one after another in a cyclic order continuously while running the code, the phases are :-
+//! 1. Timer : - if any SetTimeOut ,SetInterval waiting the callback queue event loop push that them to call stack
+//! 2. Pool :- very importing phrase/period. In this phrase I/O callbacks like - incoming connections(data request from user), api calling , fs (file system reading), crypto function calls, http.get() functions are pushed inside the callback queue.
+//! 3.Check:- SetImmediate() is pushed
+//! 4.Close :- Socket.on("close") is pushed
+
+//* Show event loop has these four important phases so actually there are more phases but but these phases are the most important phases happens behind the scenes and in each phase the callback functions related to that phase gets pushed into the call stack when it is empty and the event loop is continuously running this four phases in a cyclic order and on the other hand also continuously checking the call stack if it is idle/empty.
+//! But before every phase starts event loop Runs a priority cycle which is basically checking if there is any process.nextTick() or Promise Callback , Waiting in the callback queue or not and if any process.nextTick() or Promise Callback is waiting In the callback queue then instantly it push those callback functions to the call stack when it is empty and these priority cycle repeats every time before going to any phase.
+//! So the when the event loop starts first even before going to the timer phase first it will repeat this priority cycle so it will check if there is any  process.nextTick() or Promise Callback waiting in the call back queue then event loop will push them first in the call stack then it will enter into the any phrase.
+//* inside the the callback queue there are different queues for every phase related callback functions, like - for timer related callback functions there is separate queue , for poll related callback functions there is separate queue, for check related callback function there is separate queue, for close related callback function there is separate queue,for promise related callback function there is separate queue and for process.nextTick()  there is separate queue.
+//* So the event loop cheques every queue inside the callback queue at a time and also checks if the call stack is empty so it can push the callback functions from the callback queue.
