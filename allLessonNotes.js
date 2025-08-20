@@ -313,7 +313,7 @@ sum:sum
 //* So now we will discuss how the V8 engine will execute the above code using Libuv , So in the above code there is some synchronous code and there is also some asynchronous code, So the first step is our whole code is wrapped inside a global execution context and pushed inside the call stack, Now our code will start to execute line by line so at the first line we have a variable A so it will be saved inside the memory heap and the interpreter will move to the next line and it will see variable now again it will save it to the memory heap and then goes to the next line and js engine sees that it is a api call so J S engine cannot perform api call so immediately js engine delegates this api call task to lib uv now libuv Will register this api call with the callback function and wait until the response returns from the server meanwhile javascript engine move to the next line to execute the code and it again sees a setTimeOut() Function so javascript engine has no concept of time it just gets the code and immediately executes it that's how javascript works so as javascript engines is this set I timeout function Immediately it gives this to libuv Now leave we will register this set timeout function with the callback function and start to count the time as libuv Can talk with the operating system and access it time functions meanwhile javascript engine moves to the next line and again it sees that it has to read a file from the file system so javascript engine again can't read this file itself so it again offloads this task to leave uv and leave uv register these file system reading task with the call back function now javascript engine moves to the next line and it sees that it is a normal function, So it saves the whole function inside the memory heap and again it moves to the next line and it sees that it is a variable C and its value is a function call which it has already saved inside the memory heap so it takes the function from the memory heap and wraps it inside a function execution context, And push it inside the call stack now it multiplies it and saves the result inside the memory heap and then in the next line it returns the result now the functional execution context moves out of the call stack and also the result  Constant it created inside the memory heap goes to the garbage collector as it is not needed anymore and the result is already returned so now the control comes back to the global execution context again and the variable C got its result as returned value and J S engine saves it inside the memory heap and In the next line it prints the result of c variable , Now as the code execution is completed the global execution context moves out of the call stack meanwhile lib uv has completed the file system reading and the call stack is already empty as the global execution context is moved out of the call stack so as soon as lib UV Get the file system data immediately it creates a function execution context and push that with the callback function inside the call stack and call stack can now immediately execute it and print the data to the console and this function execution context goes out of the call stack and then after few milliseconds again libuv Sees that the server has returned the api calls data so immediately libuv Creates a function execution context and push that inside the call stack with the callback function it previously register and js engine will execute the function and print the data to the console and then the function execution context moves out of the call stack and finally 5 seconds passed And libuv uv sees that the timer is completed So Libuv again Creates a function execution context and push that inside the call stack as the timer is completed and js engine will immediately execute the function and print set timeout to the console and again the function execution context goes out of the call stack.
 //* that's how v8 engine and libuv works together to make everything optimized and fast. And that's why js engine is synchronous but with the power of libuv , node js is capable of asynchronous IO or  non blocking IO.
 
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 7 - Sync,async,setTimeoutZero - code
+//! Season 1 - Episode - 7 - Sync,async,setTimeoutZero - code
 //* above we already learnt about how to read  a file with fs.readfile() and this asynchronous so when js engine comes to this line where fs.readFile is written it offloads this task to libuv and continues the code execution so this function is non-blocking.
 //* but there is another similar kind of function which is blocking type , soo this function is synchronous , and its name is " fs.readFileSync("path","utf8",(err,data)=>{})" , so as the name says "readFileSync()" , this function is synchronous, so we js engine comes to the line where this function is written, js engine will give this this task to libuv as js engine is capable of reading a file from the file system but unlike the readFile() function this readFileSync() function blocks the main thread , so till libuv returns the response of this task , it will block the thread, and only after executing this function js engine can move to the next line.
 //* so we should not use this readFileSync() unless we want to block the main thread.
@@ -343,7 +343,7 @@ const crypto = require("crypto"); //* The node:crypto module provides cryptograp
 //* So even we provide 0 milliseconds timer to setTimeout , stills it comes with a condition that it will be executed as soon as possible when the call stack is empty.
 
 //* example
-
+/*
 console.log("hello");
 setTimeout(() => {
   console.log("call me right now");
@@ -351,9 +351,9 @@ setTimeout(() => {
 const key = crypto.pbkdf2Sync("secret", "salt", 5000000, 64, "sha512");
 console.log(key.toString("hex"));
 //* as this crypto.pbkdf2Sync() is a synchronous function , so the setTimeout() above it with 0 millisecond timer can only executed once this synchronous code is executed and global execution context moves out of the call stack.⁡
-
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 8 - Deep dive into v8 js engine notes
-//* Is javascript a interpreted language or compiled language?
+*/
+//! Season 1 - Episode - 8 - Deep dive into v8 js engine notes
+// ⁡⁣⁢//* Is javascript a interpreted language or compiled language?
 //* there are Mainly three types of languages so the first one is interpreted languages so in case of interpreted languages they are executed line by line and their initial execution is fast and there is a interpreter which executes the code now there is second type of languages which are compiled languages so in case of compiled languages the code first gets converted from high level code to machine level code and because of that the compilation process is initially heavy but then executed fast as it is already converted into machine code and there is a compiler which compiles the code and now comes the third category which is just in time compiled(JIT compilation) language and javascript falls in this category so javascript has both the interpreter and the compiler and that is what makes javascript so unique.
 
 //* when we write so js code and give it to v8 engine to execute , what happens behind the scene?
@@ -442,7 +442,7 @@ console.log(key.toString("hex"));
 * • Dividing the heap into generations to optimize garbage collection frequency. 
 * • Using different techniques (copying, mark-compact) for different generations. 
 * • Employing incremental, concurrent, and parallel techniques to minimize * performance impact. [1, 3, 5, 6, 7, 8]  
-
+⁡
 */
 
 //* v8 also use a garbage collector named "Oilpan". Oilpan implements a Mark-Sweep garbage collector where garbage collection is split among two phases: marking where the managed heap is scanned for live objects, and sweeping where dead objects on the managed heap are reclaimed.
@@ -475,3 +475,72 @@ console.log(key.toString("hex"));
 //! So the when the event loop starts first even before going to the timer phase first it will repeat this priority cycle so it will check if there is any  process.nextTick() or Promise Callback waiting in the call back queue then event loop will push them first in the call stack then it will enter into the any phrase.
 //* inside the the callback queue there are different queues for every phase related callback functions, like - for timer related callback functions there is separate queue , for poll related callback functions there is separate queue, for check related callback function there is separate queue, for close related callback function there is separate queue,for promise related callback function there is separate queue and for process.nextTick()  there is separate queue.
 //* So the event loop cheques every queue inside the callback queue at a time and also checks if the call stack is empty so it can push the callback functions from the callback queue.
+
+//* lET'S understand it using a code example
+/*
+const fs = require("fs");
+const a = 100;
+setImmediate(() => console.log("setImmediate"));
+
+fs.readFile("./file.txt", "utf8", (err, data) => {
+  console.log(`file reading completed :-${data}`);
+});
+
+setTimeout(() => {
+  console.log("SetTimeOut");
+}, 0);
+
+function printA() {
+  console.log("a = ", a);
+}
+printA();
+console.log("Last line of the file");
+*/
+//* Now we will discuss how the above code will be executed through the v8 engine and Libuv, So first of all it will require the file system as we need it here then in the second line we have a constant a named so v8 engine will save this variable inside the memory heap, Now in the next line it sees a set immediate function so as this is a asynchronous function V8 engine will immediately offload this task to libuv, And v8 engine will continue its execution, Now libuv sees that it is a setImmediate function so immediately it push that to the callback queue For execution but it will be only executed once the check phase comes, Now in the next line V eight engine again sees That is a file system reading function so as this is the asynchronous function immediately v8engine delegates this task to libuv, Now behind the scenes we will read this file So while reading the file it will register the callback function and now it has not pushed the call back function into the queue because it is still reading the file meanwhile the V8 engine continues to execute the code and in the next line it sees a set timeout function with a zero second timer so as this is a asynchronous function immediately v8 engine offloads this task to libuv, And now libuv Sees that it is a set time out Function with zero seconds of time so libuv immediately push this function to the callback queue, Now we v8 engine will continue to execute the code, Now V8 engines is that it is a function declaration in the next line so it saves the function inside the memory heap and goes to the next line and sees that the function it just save inside the memory heap is now called so it gets the function from the memory heap and immediately executes that and print the value of a constant to the console and in the next line it again console logs last line of the file now as this all synchronous code is executed now the global execution context pops out of the call stack and now the call stack is empty so till now the event loop of libuv Was continuously checking if the call stack is empty or not, Now after the call stack is empty Now the event loop first of all see the Priority cycle so it will see if there is any process next function or any promise callback waiting in the callback queue or not then it will go to the timer phase and it sees that  a settimeout function is waiting inside the callback queue, So immediately it will wrap that inside a function execution context and push that inside the call stack and console log of setTimeout will be printed ,now again it runs the priority cycle and it is no promise callback or process.next tick function is waiting in the callback queue so now it enters to the poll phase, But as the file reading is not completed yet so there is no callback function related to poll phase is waiting in the Callback queue so again it goes through the priority cycle and it see nothing is there, So now it enters to the check phase and it says that a set immediate callback is waiting inside the callback queue so immediately it push that to the call stack after wrapping it inside a function execution context, And in the console Set immediate will be printed, Meanwhile the file reading is completed so  libuv pushed the callback function to the callback queue, And the event loop has now finished the check phrase And now it will again check the priority cycle and it will see nothing is there So now it will enter to the close phase and again see that there is nothing related To this phase in the callback queue so now it will again enter to the priority cycle and it will find nothing related to it and now again it will enter through the timer phase and it will see nothing related to it and now it will again enter to the priority cycle and it will again see that there is nothing related to it and then it will again enter to the poll phrase And in the callback queue now it will see that the callback function of the file system reading is waiting so immediately it will push that to the call stack after putting it inside a function execution context and it will be executed and the console log will be printed in the console so that is how this above code will be executed so in this example we can see that as the set timeout we used with zero seconds Is executed in the timer phase but after that when the poll phase comes before the poll phase it ran the priority cycle and when it entered to the poll phase It should run the callback function of the file system reading but that has not happened because at that time the file system reading was not completed so libuv Was not pushed the callback function of the file system reading to the callback queue so that's why the event loop again ran the priority cycle and went to the check phrase And executed the set immediate function and then after completed the whole cycle when it again came to the poll phase second time now it sees that the file system Reading is completed and the callback function of the file system reading is waiting in the callback queue so now in the second cycle it prints the console log of the file system reading System reading took some time that is why it has happened.
+//* So the out of the above code, in the console the output will be
+/*
+ * a =  100
+ * Last line of the file
+ * SetTimeOut
+ * setImmediate
+ * file reading completed :-: hello world⭐⭐*/
+
+//*Let's understand another example :-
+
+const fs = require("fs");
+const a = 100;
+setImmediate(() => console.log("setImmediate"));
+
+Promise.resolve("Promise Resolved").then(console.log);
+
+fs.readFile("./file.txt", "utf8", (err, data) => {
+  console.log(`file reading completed ${data}`);
+});
+
+setTimeout(() => {
+  console.log("SetTimeOut");
+}, 0);
+
+process.nextTick(() => console.log("Process.nextTick"));
+
+function printA() {
+  console.log("a = ", a);
+}
+printA();
+console.log("Last line of the file");
+
+//* Now we will see how the above code will be executed as the above code is the mixture of synchronous and asynchronous code so first of all when we will start to execute the code the javascript engine will wrap all of this code inside a global execution context and push that inside the V8 engine's call stack Now on the first line we have required the file system module so it will first get the file system module from the node and now it will come to the next line and it says that we have created a constant A so js engine will save this constant inside the memory heap then move to the next line and it sees a setImmediate function, So as this is a asynchronous function so V8 engine will immediately offload this task to libuv, and libuv Says that this does not take any time so immediately it will put it inside the check queue inside callback queue, But right now live we can't push this callback function inside the call stack because the call stack is not empty so the V8 engine meanwhile keeps running and again it sees that it is a promise so again v8 engine Delegates this task to libuv And as this is immediately resolved so libuv puts seat inside the promise callback queue present inside callback queue, And the V8 Engine continues the code execution and now it says that it is a file system reading operation so again as this is an asynchronous task that is why V8 engine offloads these tasks to libuv, and libuv Registers the callback function and starts the file reading right now it has not pushed inside the callback queue because the file reading operation takes some time like 200 milliseconds now the V8 engine again moves to the next line and it sees that it is a set timeout function with a zero second timer so as this is also a asynchronous task so v8 engine Delegates this task to libuv, as libuv sees That it has a 0 second timer so immediately it pushes the callback function inside the timer callback queue present inside the callback queue and meanwhile V8 engine is continuing the code execution and it says that it is a process.nexttick() Function so as this is again asynchronous task so v8 engine of loads also this work to libuv, and libuv sees That it does not take any time so immediately push it inside process.nextTick queue present inside the callback queue, and remember this queue has the highest priority, and second highest is promise queue, Meanwhile the V8 engine is continuing the execution and it says that it is a function declaration named printA So it saves it inside the memory heap and in it moves to the next line and it sees that it is the function call so it calls the function and prints the value a constant to the console, And in the Again a console log so it prints "last line of the file", And now after executing all of these synchronous code v8 engine a sitting idle, Immediately when libuv's event loop sees that the call stack is empty, it starts checking the callback queues, with the specific order it follows, So first it will Enter into the priority cycle and it will check the priority queues , so first it checks process.nextTick queue and it has a callback function waiting so it prints to the console - process.nextTick, and then it checks the promise queue so it sees a callback present , so push the callback to callstack and execute it, so in the console Promise is resolved will be printed, now it enters to the timer phrase and it checks the timer queue and see a setTimeout callback is waiting so ity immediately push that to the call stack and execute it, and in the console it prints - timer expired, now again it enter to priority cycle and checks the priority queues and see nothing present so , it enters to poll phrase and checks the poll queue and sees nothing because the file system reading is not completed yet, so again it enter to priority cycle and checks the priority queues and see nothing present so , it enters to the check phrase and sees that a setImmediate callback is waiting so push that to call stack and execute it and prints - setImmediate to the console, and enter to priority cycle and checks the priority queues and see nothing present so it enters to close phrase and see nothing ,so enter to priority cycle and checks the priority queues and see nothing present so and then timer phrase and see nothing so enter to priority cycle and checks the priority queues and see nothing present so it again enters to the poll phrase and this time it sees that the file reading is completed and libuv has pushed the callback to the poll callback queue present inside the callback queue so , it puts the callback function to the call stack and execute it, and print - file reading completed : hello world⭐⭐, and now the function execution context also goes out of the call stack.
+//*  So the console output will be :-
+/*
+ * a =  100
+ * Last line of the file
+ * Process.nextTick
+ * Promise Resolved
+ * SetTimeOut
+ * setImmediate
+ * file reading completed : hello world⭐⭐
+ */
+
+//* waiting at poll phrase when event loop is idle/empty:- So in the previous example we have seen that in the first cycle Event loop executed the timer callbacks related callbacks promise related callbacks cheque related callbacks close related callbacks but in the second cycle when the file system reading is finally completed then it executed the poll related callback which was the file reading so when the event loop is idle or empty All of the callback queues are empty because they have already completed the task in this scenario the event loop comes to the poll phase and wait for some time till some data related to poll phase comes like in the above scenario after completing the first cycle the event loop was idle so it was waiting at the poll phase to come some callback function and when the file reading was completed and in the poll callback queue When the callback function came event loop immediately take that callback function wraps it inside a function execution context and push that to Call Stack
+//* that's why the event loop of libuv is called semi-Infinite loop because it waits at the poll phrase when event loop is idle.
+//* don't confuse this libuv's event loop with browser's event loop because both works in a very different way, we have above learnt how the event loop of libuv works inside node js.
