@@ -586,6 +586,7 @@ console.log("last line of the file");
  * 2nd Timer expired*/
 
 //! Another important example related to process.nextTick():-
+/*
 const fs = require("fs");
 setImmediate(() => console.log("setImmediate"));
 
@@ -603,7 +604,7 @@ process.nextTick(() => {
 });
 
 console.log("last line of the file");
-
+*/
 //* Now we already know how the above code will be executed but one thing about the nexttick function is new in this code so above code has the next tick function which has another next tick function inside that. So in the code execution first the global execution context will be created and after requiring the file system module the set immediate function will go to libuv and wait in the check queue then the set timeout will go to the libuv and wait in the timer queue then the promise will be offloaded to Libuv and wait inside the promise queue then the file system reading will go to libuv and wait inside the pole queue then process.nexttick will go to libuv and wait inside nextTick queue. and then console log - last line of the file will printed.
 //* now the call stack is idle, so event loop will start to check the callback queues , so first it will check the priority queues and inside nextTick queue , it sees a call back so it push that to call stack, now call stack sees another process.nextTick() inside it so again it offloads that to libuv and in the console prints nextTick, but this time event loop will not go to check the promise callback queue because the process.nextTick has the highest priority so again event loop will push this inner callback to nextTick Queue and event loop will take the callback and push to call stack, and now the inner nextTick will be printed in console.
 //* So it does not matter how many nested nextTicks are present inside a process.nextTick() , as these are high priority these will be executed first, because event loop will push them first to call stack,now it checks the promise queue and and push promise callback to the call stack and print promise is resolved and now event loop goes to timer phrase and check timer queue and push set time out callback to call stack and prints timer expired then again checks priority queues, then poll queue and sees it is empty then again checks priority queues and sees it is empty so goes to check phrase and push setImmediate to call stack and print setImmediate in console.then after completing the rest cycle waits at poll phrase as the event loop is idle and all callback queues are idle, then file reading i s completed and file reading callback comes to the poll queue and event loop push that to the call stack and prints  * file reading completed : hello world⭐⭐ in the console.
@@ -617,3 +618,53 @@ console.log("last line of the file");
  * Timer expired
  * setImmediate
  * file reading completed : hello * world⭐⭐*/
+
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 10 - Thread pool in libuv
+//* Tick :- inside libuv's event loop each cycle ,so completing all of the phrases  once is called tick.
+
+//* in the previous lesson we have learned that event loop has 4 main phrases - timer , poll , check and close. But if check the node js docs of event loop[see diagram image in this url - "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick"] . we can see that after the timer phrase two more phrases are mentioned their , first is pending callback phrase and second is idle,prepare phrase.
+//* pending callback phrase - after timer phrase we know priority cycle will be checked after after that this pending phrase comes . In this phrase ,it executes I/O callbacks deferred to the next loop iteration.So , i/o callbacks are executed in the poll phrase we know that, but suppose so many api calls , fs reading, https requests , are waiting in the poll queue , but there is limit in the poll queue, unless the other queues will starve/other queues will not get chance to execute their callbacks , so sometimes , event loop defer / reschedule some I/O callbacks for the next cycle, and those deferred callbacks will execute in the this pending callback phrase.
+//* idle ,prepare phrase:-This phrase is only used internally. So before entering into poll phrase libuv performs some internal idle and prepare checks in this phrase, like calculating the timer, suppose , all the queues are empty , and some setTimeouts of 5 sec, 10 sec ,15 secs are running, so in this phrase , event loop sees the nearest timer which is 5 sec in this case, and decide that in the poll phrase it can wait upto 5 secs to poll callbacks and push to the call stack of v8 and after 5 sec it has to start the cycle so it can go to the timer phrase to execute the callbacks from the timer queue through pushing them to call stack of v8.
+//* these above phrase are not that important , but we should know them as they are mentioned in the official documentation of node js.
+
+//* But if we go to libuv is doc , the diagram is more complex , libuv's diagram is also explaining the same thing but in more detailed manner. We can that using this link and read the whole explanation and see the diagram by libuv :- "https://docs.libuv.org/en/v1.x/design.html#the-i-o-loop"
+//* So the diagram of libuv explains that first it initiates the loop timer then it runs the due timers so basically this is the timer phase then it sees that if the loop is alive or not then if the loop is alive then it will enter to the pending callback phase we just discussed above then it will run the idle handles we also discussed this above then it will run the prepared handles we also discussed this above then these were basically the cheques before running the pole phase then after this it will enter into the pole phase where it runs the input output operations then it runs the check handles here basically it runs the set immediate so this is basically the check phrase Then it cheques the closed queue so basically it calls the close callbacks wear a socket related closing callbacks are closed then again it updates the loop time and run the due timers then it again goes back to the cycle so this diagram is a bit longer but it explains the same thing we learned.
+
+//? what is thread pool inside libuv?
+//* see image - "images\libuv threadpool.jpg"
+//* Whenever we give some file system Related task or dns lookup task or any crypto related method or any user specified input in this specific cases we already know that V8 engine off loads the task to libuv Because these tasks are time consuming tasks which will block the main thread that's why V8 engine delegates the work to libuv.Now inside libuv there is a thread pool. Which has by default 4 threads .We already know a thread means a container where some process can happen. A computer can have many many threads , but libuv occupies 4 threads by default for thread pool.Now all these task like fs related async  methods like fs.readfile() , dns.lookup() , or crypto related async methods like crypto.pbkdf2() are time consuming and we don't want to block the main thread , so v8 offloads these async operations to libuv and libuv does these operations inside its thread pool. So when we give a fs.readfile() task, libuv will give that to one thread inside the thread pool , that thread will request the file from os and read that and give that to v8 after completion.
+//* now let's say we have give 5 file reading tasks to libuv simultaneously ,so as the by default size of threads inside libuv is 4 , So first libuv libuv perform 4 tasks and when one of the thread is free after completing the task then only the fifth task will be executed through the 5th thread.
+//* because of this thread pool we can perform time consuming blocking tasks in this thread pool without blocking the main thread.
+//!increasing thread pool size:- we can increase the by default size of threads inside the thread pool  is 4, but it can be changed at startup time by setting the UV_THREADPOOL_SIZE environment variable to any value (the absolute maximum is 1024).
+// !For Mac :- in the js file we are writing code we have to just write in the above portion:- process.env.UV_THREADPOOL_SIZE= 8; //*or any
+//! For windows : - while executing code in the terminal write -"$env:UV_THREADPOOL_SIZE=8; node allLessonNotes.js"
+/*
+*The thread pool in libuv is used for tasks that are inherently blocking at the operating system level and would otherwise stall the event loop. These typically include:
+* File system operations (fs module in Node.js).
+* DNS resolution (e.g., dns.lookup() and * getaddrinfo).
+* Certain cryptographic functions.
+! not api calls or data requests*/
+//? now we will see using 5 crypto functions how the code execution will behave in the terminal because the thread pool has 4 threads by default, so the fifth one should be executed after some time once any thread is free and 4 will be executed almost at same time faster than 5th one, and we will see that the order of the execution is not guaranteed because when 4 thread are were occupied and doing the crypto task , any of the give thread which returns the answer first will will , that's why order of the tasks may not be same, and we will also see how we can increase or decrease the size of threads in thread pool and how that effects the behavior of execution.
+
+// const crypto = require("crypto");
+
+crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
+  if (err) throw err;
+  console.log("1st key hashing - Done");
+});
+crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
+  if (err) throw err;
+  console.log("2nd key hashing - Done");
+});
+crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
+  if (err) throw err;
+  console.log("3rd key hashing - Done");
+});
+crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
+  if (err) throw err;
+  console.log("4th key hashing - Done");
+});
+crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
+  if (err) throw err;
+  console.log("5th key hashing - Done");
+});
