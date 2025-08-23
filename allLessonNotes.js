@@ -668,3 +668,65 @@ crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
   if (err) throw err;
   console.log("5th key hashing - Done");
 });
+
+//? Now we will understand how networking is handled using libuv
+//* So when we are running a web server and the user using our api to request some data, so that will not be handled using thread pool of libuv.
+/*
+ *1. Socket Creation and Binding
+ *When an application using libuv (like a Node.js web server) starts to listen for incoming HTTP connections, it instructs libuv to create a listening socket.
+ *Libuv then uses the OS's networking APIs (like those from the BSD socket interface) to create and bind this socket to a specific port and IP address, according to libuv documentation.
+ * 2. Registering with the I/O Polling Mechanism
+ * Instead of constantly checking if there's an incoming connection, libuv registers the listening socket with the Operating System's I/O event notification system.
+ *Different operating systems have different underlying scalable I/O event notification mechanisms present in the kernel level for this:-
+ *Linux: uses epoll.
+ *macOS/BSD: uses kqueue.
+ *Windows: uses IOCP (I/O Completion Ports). (also known as wepoll)
+ *3. Asynchronous Connection Acceptance
+ *When a client initiates an HTTP request, the OS detects the incoming connection on the listening socket and notifies libuv through its registered I/O mechanism.
+ *Libuv then uses "uv_accept" to accept the connection and creates a new socket for the client connection.
+ *This process is asynchronous: libuv doesn't block the entire application while waiting for a connection.
+ *4. Reading and Writing Data (Non-Blocking I/O)
+ *Once a connection is established, libuv registers the client socket with the OS's I/O polling mechanism, signifying its interest in read events (when the client sends data) and write events (when the application needs to send data back to the client).
+ *Instead of blocking while reading or writing, libuv instructs the OS to notify it when data is ready to be read from the socket, or when the socket is ready to be written to.
+ *When the OS has data for the application or is ready to accept data from the application, it triggers an event that libuv's event loop can then process.
+ *Libuv uses stream operations (like uv_read_start and uv_write) for interacting with the client.
+ *5. DNS Resolution (with Thread Pool involvement)
+ *If the HTTP request involves resolving a hostname (e.g., www.example.com), libuv does utilize its thread pool for this part.
+ *DNS resolution (specifically, uv_getaddrinfo in libuv) is a potentially blocking operation at the OS level.
+ *To avoid blocking the main event loop, libuv offloads this task to one of the threads in its thread pool.
+ *Once the DNS resolution is complete, libuv receives the result and processes it on the main thread, continuing the connection process.
+ *In Summary
+ *Libuv acts as a bridge between the application code (like Node.js) and the operating system, abstracting the complexities of platform-specific asynchronous I/O operations. It employs the OS's event notification systems (epoll, kqueue, IOCP) for efficient, non-blocking network I/O, using a thread pool only for tasks like DNS resolution that might otherwise block the event loop. This allows Node.js applications to handle numerous concurrent HTTP requests efficiently without being blocked by individual I/O operations.
+ */
+
+//* Easy description of above:-
+//*In the libuv library, when it interacts with the OS for networking tasks, it uses sockets. Networking operations occur through these sockets. Each socket has a socket descriptor, also known as a file descriptor (although this has nothing to do with the file system).
+//*When an incoming request arrives on a socket, and you want to write data to this connection, it involves blocking operations. To handle this, a thread is created for each request. However, creating a separate thread for each connection is not practical, especially when dealing with thousands of requests.
+//*Instead, the system uses efficient mechanisms provided by the OS, such as epoll(on Linux) or kqueue (on macOS. These mechanisms handle multiple file descriptors (sockets) without needing a thread per connection.
+//*Hereʼs how it works:
+//*epoll (Linux) and kqueue (macOS) are notification mechanisms used to manage many connections efficiently.When you create an epoll or kqueue descriptor, it monitors multiple file descriptors (sockets) for activity.
+//*The OS kernel manages these mechanisms and notifies libuv of any changes or activity on the sockets. This approach allows the server to handle a large number of connections efficiently without creating a thread for each one. The kernel-level mechanisms, like epoll and kqueue , provide a scalable way to manage multiple connections, significantly improving performance and resource utilization in a high-concurrency environment. */
+
+//*File Descriptors (fds) and Socket Descriptors
+//*File Descriptors (FDs) are integral to Unix-like operating systems, including Linux and macOS. They are used by the operating system to manage open files,sockets, and other I/O resources.
+//*Socket descriptors are a special type of file descriptor used to manage network connections. They are essential for network programming, allowing processes to communicate over a network.
+//*Event Emitters
+//*Event Emitters are a core concept in Node.js, used to handle asynchronous events. They allow objects to emit named events that can be listened to by other parts of the application. The EventEmitter class is provided by the Node.js events module. Here's a brief overview:
+//*Creating an EventEmitter: You create an instance of EventEmitter and use the on method to register event listeners.
+//*Emitting Events: Use the emit method to trigger events and pass data to listeners.
+//* Handling Events:Listeners (functions) handle the emitted events and perform actions based on the event data.
+//*Streams
+//*Streams in Node.js are objects that facilitate reading from or writing to a datasource in a continuous fashion. Streams are particularly useful for handling large amounts of data efficiently.
+//*Buffers
+//*Buffers are used to handle binary data in Node.js. They provide a way to work with raw memory allocations and are useful for operations involving binary data, such as reading files or network communications.
+//*Pipes in Node.js
+//*Pipes in Node.js are a powerful feature for managing the flow of data between streams. They simplify the process of reading from a readable stream and writing to a writable stream, facilitating efficient and seamless data processing
+
+//* epoll uses a red-black tree data structure.Its space and time complexity is O(1) which is very fast previously it was O(n) which was slower previously.
+//* the timer queue uses min heap data structure.
+//* Some important learnings:-
+//*1.Don't block the main thread.
+//* Don't use sync methods,heavy json objects(parsing,stringify on large objects on the main thread),complex regex in main thread,complex calculation or loops in main thread.
+//* data structure is very important
+//* naming is very important.Because even in repos like node , developers make mistakes related naming, like they should have been named setImmediate() as process.nextTick() because setImmediate actually happens after oen tick/cycle but they name it setImmediate. and process.nextTick() should be named setImmediate() because it happens after each phrase.Even in node's website they mentioned this mistake, but they can't change it because it will break many people code written before.
+//*There is lot to learn.
