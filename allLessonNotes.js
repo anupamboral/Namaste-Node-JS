@@ -700,6 +700,7 @@ crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
  */
 
 //* Easy description of above:-
+//* in computer , there is hardware, on top of that we have kernel, on top of that we have processes(like node js).So, this process has to communicate with kernel to handle networking requests, so in the kernel level we have epoll,kqueue,IOCP.
 //*In the libuv library, when it interacts with the OS for networking tasks, it uses sockets. Networking operations occur through these sockets. Each socket has a socket descriptor, also known as a file descriptor (although this has nothing to do with the file system).
 //*When an incoming request arrives on a socket, and you want to write data to this connection, it involves blocking operations. To handle this, a thread is created for each request. However, creating a separate thread for each connection is not practical, especially when dealing with thousands of requests.
 //*Instead, the system uses efficient mechanisms provided by the OS, such as epoll(on Linux) or kqueue (on macOS. These mechanisms handle multiple file descriptors (sockets) without needing a thread per connection.
