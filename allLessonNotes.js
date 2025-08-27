@@ -647,7 +647,7 @@ console.log("last line of the file");
 //? now we will see using 5 crypto functions how the code execution will behave in the terminal because the thread pool has 4 threads by default, so the fifth one should be executed after some time once any thread is free and 4 will be executed almost at same time faster than 5th one, and we will see that the order of the execution is not guaranteed because when 4 thread are were occupied and doing the crypto task , any of the give thread which returns the answer first will will , that's why order of the tasks may not be same, and we will also see how we can increase or decrease the size of threads in thread pool and how that effects the behavior of execution.
 
 // const crypto = require("crypto");
-
+/*
 crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
   if (err) throw err;
   console.log("1st key hashing - Done");
@@ -668,7 +668,7 @@ crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
   if (err) throw err;
   console.log("5th key hashing - Done");
 });
-
+*/
 //? Now we will understand how networking is handled using libuv
 //* So when we are running a web server and the user using our api to request some data, so that will not be handled using thread pool of libuv.
 /*
@@ -780,5 +780,133 @@ crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
 
 //?  Can I create multiple servers?
 //* see image - images\multiple ports on one server.png
-//*Yes, you can create multiple HTTP servers. Now, suppose a user is sending a request. How do we know which server it should go to? When I mention creating an HTTP server, it means we are setting up two different Node.js applications. The distinction between these servers is defined by a port, which is a 4-digit number (e.g., port 3000). For example, suppose an HTTP server with IP address 102.209.1.3 is running on port 3000 . This combination of IP address and port number ( 102.209.1.3:3000 ) indicates which specific HTTP server the request should be routed to. Essentially, this means thereʼs a single computer (the server) that can run multiple applications, each with its internal servers. The port number determines which application or server the request is directed to
-//* from 11 th page complete work.
+//*Yes, you can create multiple HTTP servers. Now, suppose a user is sending a request. How do we know which server it should go to? When I mention creating an HTTP server, it means we are setting up two different Node.js applications. The distinction between these servers is defined by a port, which is a 4-digit number (e.g., port 3000). For example, suppose an HTTP server with IP address 102.209.1.3 is running on port 3000 . This combination of IP address and port number ( 102.209.1.3:3000 ) indicates which specific HTTP server the request should be routed to. Essentially, this means thereʼs a single computer (the server) that can run multiple applications, each with its internal servers. The port number determines which application or server the request is directed to.
+
+//* Mapping Domain Names, IPs, Ports, and Paths to Applications
+//* When you enter a domain name like youtube.com , it gets mapped to an IP address by a DNS (Domain Name System) server. The IP address identifies the specific server where the website is hosted. Now, when you combine the IP address with a port number, you can direct the request to a specific application running on that server. The port number acts as a gateway to different applications or services on the same server. For example:
+//* 102.209.1.3:3000 could point to a React application.
+//* 102.209.1.3:3001 could point to a Node.js application.
+//*But there's more! If you add a path to the URL, you can create specific API routes.
+//*For example:
+//*If you enter youtube.com , the server might direct you to the React application running on port 3000 .
+//*If you enter youtube.com/api/... , it might direct the request to a Node.js application running on port 3001
+//*Let's consider a scenario with namastedev.com . Suppose you have two applications:
+//* A React application running on port 3000 .
+
+//*A Node.js application running on port 3001 .
+
+//*You can set it up so:
+//*Requests to namastedev.com go to the React application on port 3000 .
+//*Requests to namastedev.com/node go to the Node.js application on port 3001 .
+//*This way, you can manage multiple applications on the same server and direct users based on the path they enter in the URL.
+//*In large companies, the architecture is often distributed across multiple servers rather than relying on a single server. This approach helps manage different aspects of the application efficiently and ensures scalability, reliability, and performance.
+//*Distributed Server Architecture Explained
+//****Separation of Concerns:
+//*Frontend Server: This server handles the user interface UI of the application. It serves the HTML, CSS, and JavaScript files that the browser needs to render the website. For example, namastedev.com could be hosted on an AWS server that serves both the frontend and backend.
+//* Backend Server: This server processes the logic, handles requests, and interacts with the database. Even though the backend might be on the same server as the frontend in some cases, itʼs often separated in larger systems for better performance and security.
+
+//* Dedicated Database Server: The database is typically hosted on a separate, powerful server that is optimized for storing and managing data. When a client makes a request that involves data retrieval or storage, the backend server interacts with this database server to fulfill the request.
+
+//* Media and File Servers: Large files like videos, images, and other media are often stored on specialized servers. These servers are optimized for handling large amounts of data and delivering it quickly. When you request a video from namastedev.com , the video might be fetched from a dedicated media server. Images might also be stored on a different server, often managed by a content delivery network "CDN "to ensure fast delivery to users worldwide.
+//*Inter-Server Communication: When a client makes a request, the frontend or backend server might need to communicate with other servers to get the necessary data. For example, if you request a video on namastedev.com , the server might make an API call to another server that hosts the video content, retrieve it, and then send it to the client.
+//*Example: namastedev.com Architecture
+//*Frontend & Backend: Hosted on an AWS server.
+//*Database: Stored on a separate, powerful database server.
+//*Videos: Stored on another server, possibly optimized for streaming large media files.
+//*Images: Stored on yet another server, potentially managed by a CDN for fast delivery.
+//*In many companies, the frontend and backend may also be hosted on different servers. This separation allows each part of the system to be optimized for its  specific role, ensuring better performance and making the system more scalable and resilient. This distributed approach helps large companies manage massive amounts of data and traffic efficiently, ensuring that users have a smooth and responsive experience.
+//* see image:- images\communication between different servers and client.png
+
+//? Socket vs WebSockets
+//* When a user makes a request to a website, a socket connection is established between the client and the server. This connection is typically used for a single request-response cycle: the client sends a request, the server processes it, sends back the response, and then the socket is closed. This process involves opening a new connection for each request.
+//* On the other hand, WebSockets introduce a more efficient method by allowing the connection to remain open. This means that after the initial connection is established, it stays active, allowing for continuous communication between the client and server. Both the client and server can send and receive data at any time without the need to re-establish the connection. This persistent connection is ideal for real-time applications, where continuous interaction is required, such as in chat applications, online gaming, or live updates.
+
+//* now we will learn how we can create our own server:-
+
+//* we will use http module coming from node
+
+const http = require("node:http");
+
+//* to create a server we will use a function available on his http module name http.createServer([option],[requestListener])
+
+const server = http.createServer((req, res) => {
+  //* if we want to send some specific response according to the url path we can also do that
+  if (req.url === "/getsecret") {
+    res.end("there is no secret");
+  }
+  res.end("hello world"); //* using this end method we finally send back the response at the end after doing any modification if needed.So it we write hello world inside it then it will return hello world as response to the client
+}); //* this createServer method returns a new instance of a server like we create instance of a class; now using this server we can listen to the incoming requests.To send back response to client inside the () we write a requestListener function which has two params request and response.
+//* to listen to the requests  we have to call a listen() method on the server and mention the port number on which we want to listen for the incoming requests
+
+server.listen(9999); //* we can use any port number
+
+//* now first we have to run this file in the terminal to run the server, and we will see that the code execution is waiting , because it will waiting for the incoming requests from the clients .So let's use our browser as a client to make request to our running server.So our server and browser is running on the same computer, so in the browser we can write localHost:port in this case our port number is 9999 so we have write localhost:9999 to connect our server running here.
+//* and we will see it is returning hello world, because from here , using the end()  method we sent the text response hello world.
+//* similarly we can host it on aws, and people can hit that ip and get that data back.this is the http server we have created
+
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 11 - Creating a server
+//? what is a database ?
+//* In computing, a database is an organized collection of data or a type of data store based on the use of a database management system (DBMS), the software that interacts with end users, applications, and the database itself to capture and analyze the data. The DBMS additionally encompasses the core facilities provided to administer the database. The sum total of the database, the DBMS and the associated applications can be referred to as a database system. Often the term "database" is also used loosely to refer to any of the DBMS, the database system or an application associated with the database.
+//! learning all types of database is not that important but first two -relational db and nosql is important.
+//* Types of databases
+// ! Relational DB  MySQL, PostgreSQL
+//* Relational databases like MySQL and PostgreSQL use structured tables with predefined schemas, making them ideal for handling complex queries and transactions. They ensure data integrity through ACID properties and are widely used for applications requiring robust, relational data models.
+
+//! NoSQL DB  MongoDB
+//*MongoDB is a NoSQL database that stores data in flexible, JSON-like documents, allowing for dynamic schemas. It's highly scalable and ideal for handling large volumes of unstructured or semi-structured data, making it popular for modern web applications.
+
+//* In-memory DB  Redis:
+//*Redis is an in-memory database known for its high-speed data processing capabilities. It supports various data structures like strings, hashes, and lists,making it suitable for caching, real-time analytics, and message brokering.
+//* Distributed SQL DB  CockroachDB
+//*CockroachDB is a distributed SQL database designed to scale horizontally across multiple nodes while providing strong consistency and ACID transactions. It's ideal for applications requiring high availability and resilience across different geographic locations.
+//*Time Series DB  InfluxDB
+//*InfluxDB is a time series database optimized for handling high write and query //*loads, particularly for time-stamped data. It's commonly used for monitoring, real-time analytics, and IoT applications where time-based data is crucial.
+//* OO DB - db4o:
+//* db4o is an object-oriented database that stores data as objects, closely aligning with object-oriented programming languages. It simplifies development by allowing direct storage and retrieval of objects without the need for conversion to relational tables.
+//* Graph DB  Neo4j:
+//*Neo4j is a graph database that excels at handling complex relationships between data entities. It uses a graph structure with nodes, relationships, and properties, making it ideal for applications like social networks, recommendation engines, and fraud detection.
+//*Hierarchical DB  IBM IMS
+//*IBM IMS is a hierarchical database that organizes data in a tree-like structure with parent-child relationships. It's used primarily in legacy systems for high- performance transaction processing and is known for its reliability in handling large-scale, mission-critical applications.
+//* Network DB  IDMS
+//*IDMS Integrated Database Management System) is a network database that represents data using a graph of record types and set relationships. It allows more complex relationships than hierarchical databases and is often used in legacy systems requiring high performance.
+//* Cloud DB ( Amazon RDS)
+//*Amazon RDS Relational Database Service) is a managed cloud database service that supports multiple relational database engines, including MySQL, PostgreSQL, and Oracle. It automates tasks like backups, patching, and scaling, making it easy to deploy and manage databases in the cloud.
+
+//* Most commonly used databases are :
+//* Relational DB
+//* NoSQL DB
+
+//* WE CAN READ ABOUT THE STORIES OF ABOVE DATABASES IN AKSHAY'S VIDEO AND NOTES BUT NOT IMPORTANT TO REMEMBER
+
+//*now we will learn about mongodb
+//* NoSQL databases can be classified into four main types:
+//* Document Databases
+//* Key-Value Databases
+//* Graph Databases
+//* Wide-Column Databases
+//* Multi-Model Databases(this one also exist but not one of main four types)
+//*MongoDB, a popular NoSQL database, was created in 2009 around the same time as Node.js. Itʼs a coincidence that both have gained popularity together, as MongoDB works exceptionally well with JSON and JavaScript objects. MongoDB was developed by a company named 10gen, and the name "MongoDB" comes from the word "humongous," reflecting its ability to handle massive amounts of data. The company later renamed itself MongoDB Inc., which continues to manage MongoDB today. MongoDB is known for significantly increasing developer productivity.
+
+//*RDBMS vs NoSQL (Document)
+//* see image - images\understanding relation db and mongodb.png
+//*RDBMS (Relational Database Management System)
+//*Structure RDBMS uses a table-based structure, organizing data into rows and columns, similar to a spreadsheet or Excel sheet. Each table represents a different entity, and the columns represent attributes of the entity.
+// *Relationships In RDBMS, relationships between tables are established using foreign keys. For example, if you want to store user hobbies, you would create separate tables for users and hobbies and then map them using a user ID. This design often requires the use of joins to retrieve related data.
+// * Normalization Data normalization is a key concept in RDBMS. It involves organizing data to minimize redundancy and improve data integrity. This often requires multiple related tables and complex join operations to assemble a complete dataset.
+//* NoSQL (Document Database)
+//*Structure: NoSQL document databases, such as MongoDB, use a flexible, schema-less structure. Data is stored in documents, which are similar to JSON objects. Each document is a collection of key-value pairs and can have nested structures.
+// * Collections: Instead of tables, MongoDB uses collections. A collection is a group of documents, analogous to a table in RDBMS. Each document in a collection can have a different structure, which allows for more flexible data modeling.
+// *Data Storage: In MongoDB, you can store related data within a single document. For example, instead of creating separate tables for users and their hobbies, you can store a user's hobbies as an array within the user's document. This eliminates the need for joins and complex queries.
+//*Ease of Use: MongoDB and other document databases are designed to work well with JavaScript. Since documents are similar to JSON objects, they integrate seamlessly with JavaScript code, making it easier to work with data in web applications.
+// * Schema Flexibility: NoSQL databases offer schema flexibility, allowing you to add or modify fields without affecting existing documents. This makes it easy to adapt to changing requirements and store diverse types of data.
+
+//* difference between RDBMS vs NoSQL (Document)
+//* see image - images\difference between relation db abd nosql.png
+//*Table Structure: RDBMS organizes data into tables with rows and columns. In contrast, NoSQL document databases use collections of documents, where each document can have a flexible and nested structure.
+// *Data Organization: RDBMS has a structured format, while NoSQL offers a flexible schema, allowing documents to vary in structure.
+// *Schema: RDBMS requires a fixed schema, meaning the structure must be predefined and is not easily changeable. NoSQL databases have a schema- less design, allowing for easy changes and adaptability
+//*Query Language: RDBMS uses SQL for querying, which is a standardized language for relational databases. NoSQL databases have their own query mechanisms, which can vary depending on the database system. 
+// *Scaling: RDBMS generally faces challenges with horizontal scaling (scaling out across multiple servers). NoSQL databases are designed for easier horizontal scaling, making them more suitable for distributed environments. 
+// *Relationships: RDBMS uses foreign keys and joins to manage relationships between tables. NoSQL document databases handle relationships by embedding related data within documents or using references. 
+// *Use Case: RDBMS is often used in scenarios requiring complex transactions and strong consistency, such as banking systems. NoSQL databases are preferred for applications needing flexible data models and high-performance, such as content management systems and real-time data processing. 
+// *Examples: RDBMS examples include banking applications that need ACID compliance and complex transactions. NoSQL examples include systems like content management and real-time analytics platforms, where flexibility and scalability are key.
