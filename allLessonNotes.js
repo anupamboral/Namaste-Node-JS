@@ -844,7 +844,7 @@ server.listen(9999); //* we can use any port number
 //* and we will see it is returning hello world, because from here , using the end()  method we sent the text response hello world.
 //* similarly we can host it on aws, and people can hit that ip and get that data back.this is the http server we have created
 
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 11 - Creating a server
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 12 - Database sql nosql
 //? what is a database ?
 //* In computing, a database is an organized collection of data or a type of data store based on the use of a database management system (DBMS), the software that interacts with end users, applications, and the database itself to capture and analyze the data. The DBMS additionally encompasses the core facilities provided to administer the database. The sum total of the database, the DBMS and the associated applications can be referred to as a database system. Often the term "database" is also used loosely to refer to any of the DBMS, the database system or an application associated with the database.
 //! learning all types of database is not that important but first two -relational db and nosql is important.
@@ -905,8 +905,41 @@ server.listen(9999); //* we can use any port number
 //*Table Structure: RDBMS organizes data into tables with rows and columns. In contrast, NoSQL document databases use collections of documents, where each document can have a flexible and nested structure.
 // *Data Organization: RDBMS has a structured format, while NoSQL offers a flexible schema, allowing documents to vary in structure.
 // *Schema: RDBMS requires a fixed schema, meaning the structure must be predefined and is not easily changeable. NoSQL databases have a schema- less design, allowing for easy changes and adaptability
-//*Query Language: RDBMS uses SQL for querying, which is a standardized language for relational databases. NoSQL databases have their own query mechanisms, which can vary depending on the database system. 
-// *Scaling: RDBMS generally faces challenges with horizontal scaling (scaling out across multiple servers). NoSQL databases are designed for easier horizontal scaling, making them more suitable for distributed environments. 
-// *Relationships: RDBMS uses foreign keys and joins to manage relationships between tables. NoSQL document databases handle relationships by embedding related data within documents or using references. 
-// *Use Case: RDBMS is often used in scenarios requiring complex transactions and strong consistency, such as banking systems. NoSQL databases are preferred for applications needing flexible data models and high-performance, such as content management systems and real-time data processing. 
+//*Query Language: RDBMS uses SQL for querying, which is a standardized language for relational databases. NoSQL databases have their own query mechanisms, which can vary depending on the database system.
+// *Scaling: RDBMS generally faces challenges with horizontal scaling (scaling out across multiple servers). NoSQL databases are designed for easier horizontal scaling, making them more suitable for distributed environments.
+// *Relationships: RDBMS uses foreign keys and joins to manage relationships between tables. NoSQL document databases handle relationships by embedding related data within documents or using references.
+// *Use Case: RDBMS is often used in scenarios requiring complex transactions and strong consistency, such as banking systems. NoSQL databases are preferred for applications needing flexible data models and high-performance, such as content management systems and real-time data processing.
 // *Examples: RDBMS examples include banking applications that need ACID compliance and complex transactions. NoSQL examples include systems like content management and real-time analytics platforms, where flexibility and scalability are key.
+
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 11 - Creating a database mongodb
+//* there are two ways of using mongodb
+//*1. Like any other software we can download mongoDb software and run the software locally in our computer(self managed)
+//*2. We don't need install it on our system ,on behalf you,mongodb takes the database  install on to a server(aws,azure,google cloud servers), and give access to you.
+
+//* So the first one is community version(self managed and free),
+//* second is the enterprize version and mongodb manages everything(it also has a free version for developers )and this can be also self managed if we want ,or we can let mongodb handle it.
+
+//* So this enterprize version has also a self managed version which called enterprize advanced
+//* and a enterprize version  managed by mongodb itself and it is call called mongodb atlas.
+
+//* So we will use the free version of mongodb Atlas, and let mongodb handle every thing. first we have to register with our email. So click on get started button on the hero section and sign up
+//* after sign up it will ask for a survey, about how we will use the database.
+//* then the next page will come , where we have to create our cluster ,so to create our mongo atlas database , we have to create a cluster , so in this cluster step we have to choose our plan , so here we will choose the free plan,and name our cluster namaste node(we can use any name), and and other things can be set to default
+//* we can choose any one provide from aws , azure or google cloud, and the region should  be near the users, so will choose mumbai.
+//* we can tick the auto security setup  and preload sample dataset.
+//* then click on create deployment
+//* then it will ask for creating a user and so create username and password and remember to copy the password, so we can create multiple users later for multiple projects.
+//* now after coping password click on create database user
+//* then it will tell you to choose a connection method click on it. and choose the second option compass. we can abd copy the connection string , it is the necessary thing. if we click on cross* mark that's not a problem then in the dashboard inside the cluster there will be a connect button , click on the that and it will take us to the same page , then choose the compass and copy the connection string.
+//* then we have to search on google "mongodb compass" and download the software , we will use it to see our database
+//*
+
+//* now open the mongodb compass and click on new connection an paste the connection string we copied and give a name choose a color and click save , then you will see the cluster you created there will show here now, and there are some sample data also because remember while creating the cluster we had chosen some options that's why this sample data is added
+//* now we can ceate database from the compass also and from here our code also, but let's create the first database from the compass , so inside the cluster namaste node there will be a option "create database" click on it.it wil ask for name and the collection name, So let's name it hello world ans as we will save the user's data inside the database so we will name the collection "user".
+//! don't tick the series option , series database are different ,we don't need it.
+//* So inside the hello world database we have created a "user" collection. So inside user collection now we can add documents(like js objects).
+//* So click on add data button inside this user collection. and choose insert document. you will see it will show us a id , we can keep it , but if we delete the id that's also fine because even we remove the id then add the felids(properties) like "firstName" ,"lastName", and while writing the field names write them inside "". then click on insert. then this document(object) will be created and automatically a object id will be added.So that it can uniquely identify the document.
+//* we can also add a document using code.Let's do that.
+//* So how will we connect our node application with the mongodb database which is hosted on aws(mumbai).
+//*So first of all we have to install mongodb package using our terminal by running the command "npm i mongodb" .
+//* after installation the package will we added inside node modules folder , package.json and package-lock-json will be added. now create a git.ignore file and add node_modules inside it t/o not add the node modules folder to github while committing the code.
