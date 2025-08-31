@@ -911,7 +911,7 @@ server.listen(9999); //* we can use any port number
 // *Use Case: RDBMS is often used in scenarios requiring complex transactions and strong consistency, such as banking systems. NoSQL databases are preferred for applications needing flexible data models and high-performance, such as content management systems and real-time data processing.
 // *Examples: RDBMS examples include banking applications that need ACID compliance and complex transactions. NoSQL examples include systems like content management and real-time analytics platforms, where flexibility and scalability are key.
 
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 11 - Creating a database mongodb
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 13 - Creating a database mongodb
 //* there are two ways of using mongodb
 //*1. Like any other software we can download mongoDb software and run the software locally in our computer(self managed)
 //*2. We don't need install it on our system ,on behalf you,mongodb takes the database  install on to a server(aws,azure,google cloud servers), and give access to you.
@@ -932,8 +932,6 @@ server.listen(9999); //* we can use any port number
 //* now after coping password click on create database user
 //* then it will tell you to choose a connection method click on it. and choose the second option compass. we can abd copy the connection string , it is the necessary thing. if we click on cross* mark that's not a problem then in the dashboard inside the cluster there will be a connect button , click on the that and it will take us to the same page , then choose the compass and copy the connection string.
 //* then we have to search on google "mongodb compass" and download the software , we will use it to see our database
-//*
-
 //* now open the mongodb compass and click on new connection an paste the connection string we copied and give a name choose a color and click save , then you will see the cluster you created there will show here now, and there are some sample data also because remember while creating the cluster we had chosen some options that's why this sample data is added
 //* now we can ceate database from the compass also and from here our code also, but let's create the first database from the compass , so inside the cluster namaste node there will be a option "create database" click on it.it wil ask for name and the collection name, So let's name it hello world ans as we will save the user's data inside the database so we will name the collection "user".
 //! don't tick the series option , series database are different ,we don't need it.
@@ -942,4 +940,82 @@ server.listen(9999); //* we can use any port number
 //* we can also add a document using code.Let's do that.
 //* So how will we connect our node application with the mongodb database which is hosted on aws(mumbai).
 //*So first of all we have to install mongodb package using our terminal by running the command "npm i mongodb" .
-//* after installation the package will we added inside node modules folder , package.json and package-lock-json will be added. now create a git.ignore file and add node_modules inside it t/o not add the node modules folder to github while committing the code.
+//* after installation the package will we added inside node modules folder , package.json and package-lock-json will be added. now create a git.ignore file and add node_modules inside it to not add the node modules folder to github while committing the code.
+
+//* now how will we use this mongodb package we just installed through npm, So lets go to the npm page of this mongodb library , so just search on google mongodb npm, we will get "mongodb node js driver" and open it, and inside then npm's mongodb package page we will see the api doc's link there we can learn how to use it .
+//* then in the api docs page in the right side , there are docs for every version, so right now we are using 6.19.0 (see in the package.json file) , so we will click on the api docs of 6.19.0 version.and scroll below and you will see "connect to MongoDB" heading , below this heading they mentioned all of the code we need to connect with our database we created on mongodb atlas.
+//* we can also visit this link to go to "connect to mongodb" directly :- "https://mongodb.github.io/node-mongodb-native/6.19/#md:connect-to-mongodb"
+
+//* so let's connect to the database.
+//* every thing is mentioned in documentation
+//* getting the MongoClient from the mongodb library we just installed
+const { MongoClient } = require("mongodb");
+
+////* Connection URL (url should the the connection string we copied previously while using the enterprise version mongodb atlas)
+const url =
+  "mongodb+srv://anupamboral:KYExuJH0QyiEI6kg@namastenode.cw4mdf8.mongodb.net/";
+const client = new MongoClient(url); //* creating a instance from mongoClient class
+
+// Database Name
+const dbName = "HelloWorld"; //* name should be same you used while creating the database in mongodb compass
+
+async function main() {
+  // Use connect method to connect to the server
+  await client.connect();
+  console.log("Connected successfully to server");
+  const db = client.db(dbName); //* finding the database using the database name from our cluster
+  const collection = db.collection("user"); //* here we have to mention our collection name we used in mongodb compass.
+  //! in the docs they mention how we can get or insert documents, or in the left side bar we can search collection and see all of the methods we can use on this collection to perform crud(create read update delete) operations. Remember using any method on this collection will return a promise so we have to use await to get the response. as response these methods returns a cursor , so we can chain other methods like promise chaining if needed. like the below find method helps to find all documents ,but returns a cursor and we can chain any other method on that cursor to get any filtration we want to do, and to the documents in a human readable format we are chaining .toArray() method so it returns a json format document unless it would return a cursor.
+  //*inserting  multiple documents
+
+  // const data1 = {
+  //   firstName: "Subhankar",
+  //   lastName: "Das",
+  //   phoneNumber: 7433686799,
+  //   city: "Howrah",
+  // };
+  // const data2 = {
+  //   firstName: "Om",
+  //   lastName: "Swami",
+  //   phoneNumber: 7433666799,
+  //   city: "Badrika Ashram",
+  // };\
+  //* const insertResult = await collection.insertMany([data1, data2]);
+  //* console.log("Inserted documents =>", insertResult);
+
+  //* inserting one document
+  // const data3 = {
+  // firstName: "Lionel",
+  // lastName: "Messi",
+  // phoneNumber: 9433686799,
+  // city: "Barcelona",
+  // };
+  //* const insertResult1 = await collection.insertOne(data3);
+  //* console.log("Inserted documents =>", insertResult1);
+
+  //* deleting one document
+  //*const deletedDocument = await collection.deleteOne({ lastName: "Messi" });
+  //*console.log("deleted documents =>", deletedDocument);
+
+  //* finding documents with filter
+  //* const filteredDocs = await collection.find({ city: "Howrah" }).toArray();
+  //* console.log("Found documents filtered by {city:`Howrah`} =>", filteredDocs);
+
+  //* updating a document's field(same way we can add a new field)
+  //* const updatedDoc = await collection.updateOne(
+  //*   { lastName: "Das" },
+  //*   { $set: { city: "Rudrapur" } }
+  //* );
+  //* console.log("Found documents updated by {lastName: `das`} =>", updatedDoc);
+
+  //* finding all documents
+  const findResult = await collection.find({}).toArray();
+  console.log("Found all documents list =>", findResult);
+
+  return "done.";
+}
+
+main()
+  .then(console.log)
+  .catch(console.error)
+  .finally(() => client.close() && console.log("connection closed")); //* inside the main() function we are using a client.connect() to make the connection then here as the main function is a async function so it will return a promise , so we are printing the returned value , or catching the error the in the catch() and in the finally() we are closing the connection using client.close().
