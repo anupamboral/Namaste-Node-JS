@@ -450,7 +450,7 @@ console.log(key.toString("hex"));
 //* We can read about all of these garbage collectors in v8.dev (official site of v8) , in their docs and blogs. every thing is written their.
 //* to see the whole v8 engine execution process see this image - "images\whole v8 engine execution diagram.jpg".
 
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 9 - Libuv & Event loop notes
+//! Season 1 - Episode - 9 - Libuv & Event loop notes
 
 //* now we will learn about how libuv works behind the scenes
 
@@ -619,7 +619,7 @@ console.log("last line of the file");
  * setImmediate
  * file reading completed : hello * world⭐⭐*/
 
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 10 - Thread pool in libuv
+//! Season 1 - Episode - 10 - Thread pool in libuv
 //* Tick :- inside libuv's event loop each cycle ,so completing all of the phrases  once is called tick.
 
 //* in the previous lesson we have learned that event loop has 4 main phrases - timer , poll , check and close. But if check the node js docs of event loop[see diagram image in this url - "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick"] . we can see that after the timer phrase two more phrases are mentioned their , first is pending callback phrase and second is idle,prepare phrase.
@@ -732,7 +732,7 @@ crypto.pbkdf2("secret", "salt", 5000000, 64, "sha512", (err, derivedKey) => {
 //* naming is very important.Because even in repos like node , developers make mistakes related naming, like they should have been named setImmediate() as process.nextTick() because setImmediate actually happens after oen tick/cycle but they name it setImmediate. and process.nextTick() should be named setImmediate() because it happens after each phrase.Even in node's website they mentioned this mistake, but they can't change it because it will break many people code written before.
 //*There is lot to learn.
 
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 11 - Creating a server
+//! Season 1 - Episode - 11 - Creating a server
 //* When we talk about server wh
 /*
  * What is a Server? The term "server" can refer to both hardware and software, depending on the context.
@@ -844,7 +844,7 @@ server.listen(9999); //* we can use any port number
 //* and we will see it is returning hello world, because from here , using the end()  method we sent the text response hello world.
 //* similarly we can host it on aws, and people can hit that ip and get that data back.this is the http server we have created
 
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 12 - Database sql nosql
+//! Season 1 - Episode - 12 - Database sql nosql
 //? what is a database ?
 //* In computing, a database is an organized collection of data or a type of data store based on the use of a database management system (DBMS), the software that interacts with end users, applications, and the database itself to capture and analyze the data. The DBMS additionally encompasses the core facilities provided to administer the database. The sum total of the database, the DBMS and the associated applications can be referred to as a database system. Often the term "database" is also used loosely to refer to any of the DBMS, the database system or an application associated with the database.
 //! learning all types of database is not that important but first two -relational db and nosql is important.
@@ -911,7 +911,7 @@ server.listen(9999); //* we can use any port number
 // *Use Case: RDBMS is often used in scenarios requiring complex transactions and strong consistency, such as banking systems. NoSQL databases are preferred for applications needing flexible data models and high-performance, such as content management systems and real-time data processing.
 // *Examples: RDBMS examples include banking applications that need ACID compliance and complex transactions. NoSQL examples include systems like content management and real-time analytics platforms, where flexibility and scalability are key.
 
-//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣⁢Season 1 - Episode - 13 - Creating a database mongodb
+//! ⁡⁢⁣⁡⁢⁣⁢⁡⁢⁣⁡⁢⁣⁡⁢⁣Season 1 - Episode - 13 - Creating a database mongodb
 //* there are two ways of using mongodb
 //*1. Like any other software we can download mongoDb software and run the software locally in our computer(self managed)
 //*2. We don't need install it on our system ,on behalf you,mongodb takes the database  install on to a server(aws,azure,google cloud servers), and give access to you.
@@ -1061,3 +1061,100 @@ main()
 //* 1st Frontend microservice using React.js
 //* 2nd Backend microservice using node js
 //* and these two microservices will communicate using apis. Suppose we rae trying to access devtinder.com/profile page then it will make a api call /getProfile to the backend and the backend will talk to the database and get the data from the database and send it the browser(frontend).
+
+//! ⁢Season 2 - Episode - 02 - Features,HLD,LLD, Planning
+
+//* So we are creating devtinder where developers can connect.
+//* we have visited tinder to get some inspiration and we have decided some basic features for our devtinder, while building the app we will add more features if needed.
+//*Features:-
+//* Create an account
+//* Login
+//* update your profile
+//* feed page - explore
+//* Send connection request
+//* See our matches
+//* See the request we have sent /received
+//* update your profile
+
+//* Tech planning
+//* We have decided we will have two microservices one for frontend and another for backend.Right now we are going to focus on backend.
+//* for for backend we will use node js and mongodb. in this phrase senior engineers also decide if they have to implement caching,security practices, who can access it, how the microservices will connect to each other.
+
+//* Low level design
+//* the important things in LLd is database design then second is api design/api contracts.basically what apis will be needed.
+
+//* So let's talk about database design. So as we are going use mongodb, so in mongo db we use the words collections and documents. So in this database design phrase we are going to decide what collections we need inside the database to store our data.So our app will have users so we will have a user collection which will have the user's data. then the user will send connection requests to each other. so there will be a relation between the users, so that relation is connection request. So we need another collection to store the relation information.We should not store the relation information inside the user collection.Because of single responsibility principle, So the user collection should only contain the data about the user not the relation with other users.So we will create another collection to store user's relations with other users.SO suppose person a sends request to person be , and there will a status of the request like ignored/pending/accepted/rejected(or even blocked can be a status but we will not include the block feature). So we will name this collection - connection request, and this will have data about - who sent the request, to whom the request is ent and the status of the request.
+//* 1. User collection [firstName,lastName,email,password,age]
+//* 2. Connection Request [From userId,to userId ,status]
+
+//* Api design
+//? Before going in api design we should know what is REST API.(see image - images\Rest api working process.webp )
+//* Rest API :- REST API stands for Representational State Transfer API. It is a type of API (Application Programming Interface) that allows communication between different systems over the internet. REST APIs work by sending requests and receiving responses, typically in JSON format, between the client and server.
+//*A request is sent from the client to the server via a web URL, using one of the HTTP methods.
+//*The server then responds with the requested resource, which could be HTML, XML, Image, or JSON, with JSON being the most commonly used format for modern web services.
+//*These methods map to CRUD operations (Create, Read, Update, Delete) for managing resources on the web.
+//*REST is an architectural design style for APIs, while HTTP is the communication protocol(rules) used for data transfer over the web. REST APIs use HTTP methods to interact with resources, but they are not the same thing. REST defines how the APIs should behave, while HTTP defines the rules for communication over the web. They commonly work together, but they serve different purposes.
+//*Common HTTP Methods Used in REST API
+//*In HTTP, there are five methods that are commonly used in a REST-based Architecture, i.e., POST, GET, PUT, PATCH, and DELETE. These correspond to create, read, update, and delete (or CRUD) operations, respectively. There are other methods that are less frequently used, like OPTIONS and HEAD.
+//* read more here(specially difference between PUT and PATCH) - https://www.geeksforgeeks.org/node-js/rest-api-introduction/
+
+//* let's understand using a example, when a user wants to login , then he enters the email and password and click on login and the browser using the /login Api send a request to backend then the backend communicates with the database and checks if the data entered by the user matches with database or not, and based on that backend the sends the response to the frontend - success or failed.
+//* So we will create REST APIs , and this is standard way of creating apis.
+
+//* So the http method + the url makes the api. For example:-
+//*1. Requesting a Resource (GET)
+//* GET https://api.example.com/users/123
+//*To create a new user, a client would send an HTTP POST request to a collection endpoint, including the new user's data in the request body:
+
+/*
+*2. Creating a Resource (POST) 
+*To create a new user, a client would send an HTTP POST request to a collection endpoint, including the new user's data in the request body
+
+ * POST https://api.example.com/users
+*Content-Type: application/json
+
+* {
+*   "name": "Jane Smith",
+*   "email": "jane.smith@example.com"
+* }*/
+/*
+ * The server would then create the user and typically return the newly created * resource, including its assigned ID:
+ * Code
+ *
+ * {
+ *   "id": "456",
+ *   "name": "Jane Smith",
+ *   "email": "jane.smith@example.com"
+ * }
+ * 3. Updating a Resource (PUT/PATCH)
+ * To update an existing user (e.g., change their email), a client would send an * HTTP PUT or PATCH request to the specific user's URL:
+ * Code
+ *
+ * PUT https://api.example.com/users/123
+ * Content-Type: application/json
+ *
+ * {
+ *   "email": "new.email@example.com"
+ * }
+ * 4. Deleting a Resource (DELETE)
+ * To remove a user, a client would send an HTTP DELETE request to the specific * user's URL:
+ * Code
+ *
+ * DELETE https://api.example.com/users/123
+ * The server might respond with a success status code (e.g., 204 No Content) to * indicate successful deletion
+ */
+
+//* So for our application we have decided to to make the below apis for now:-
+/*
+ * POST /signup
+ * POST /login
+ * GET /profile
+ * POST /profile
+ * PATCH /profile
+ * DELETE /profile\
+ * POST /sendRequest (ignore/interested)
+ * POST /reviewRequest (accept/reject)
+ * GET /request
+ * GET /connections
+ */
+//* these apis are basically to perform CRUD(create/read/update/delete operation)
